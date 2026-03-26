@@ -1,6 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { loginUser, registerUser, authUser } from './thunkFunctions';
-import { toast } from "react-toastify";
 
 const initialState = {
     userData : {
@@ -35,12 +34,10 @@ const userSlice = createSlice({
         state.isLoading = false;
         state.userData = action.payload;
         state.isAuth = true;
-        toast.info('로그인을 성공했습니다.')
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-        toast.info('로그인을 실패했습니다.')
       })
 
 
@@ -50,12 +47,10 @@ const userSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state) => {
         state.isLoading = false;
-        toast.info('로그인을 성공했습니다.');
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-        toast.info('회원가입을 실패했습니다.')
       })
       // 로그인 유지
       .addCase(authUser.pending, (state) => {

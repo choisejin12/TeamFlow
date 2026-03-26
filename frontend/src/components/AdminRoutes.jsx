@@ -1,15 +1,27 @@
 import { useSelector } from 'react-redux';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { toast } from 'react-toastify';
 
-function AdminRoute({ children }) {
-  const { user, isAuth } = useSelector(state => state.user);
+function AdminRoute() {
+  const { userData, isAuth } = useSelector(state => state.user);
+  const navigate = useNavigate();
+  console.log(userData)
+  useEffect(() => {
+    if (isAuth && userData?.platformRole !== 'ADMIN') {
+      toast.error("관리자만 접근 가능합니다.", {
+      toastId: "admin-error",
+    });
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuth, userData, navigate]);
 
   if (!isAuth) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.platformRole !== 'ADMIN') {
-    return <Navigate to="/" replace />;
+  if (userData?.platformRole !== 'ADMIN') {
+    return null; // 🔥 navigate가 이미 실행되니까 렌더 안함
   }
 
   return <Outlet />;

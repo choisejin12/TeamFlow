@@ -6,9 +6,8 @@ const auth = async (req, res,next) => {
 
     if (!authHeader || !authHeader.startsWith('Bearer '))
         return res.sendStatus(401);
-
     const token = authHeader.replace('Bearer ', '').trim();
-
+    
     if (!token) return res.sendStatus(401);
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);

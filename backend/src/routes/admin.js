@@ -3,6 +3,7 @@ const router = express.Router();
 
 const User = require('../models/User');
 const Team = require('../models/Team');
+const Notice = require('../models/Notice');
 
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
@@ -91,6 +92,7 @@ router.get('/notices', auth, async (req, res) => {
         res.json({ notices });
 
     } catch (err) {
+        console.error("🔥 notices 에러:", err);
         res.status(500).json({ error: err.message });
     }
 });

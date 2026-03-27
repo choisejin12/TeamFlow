@@ -24,16 +24,15 @@ function Layout() {
 
         {/* 🔥 모바일 사이드 메뉴 */}
         <div
-          className={`fixed left-0 top-0 z-50 h-full w-[75%] max-w-75 bg-[#f3f6f0] p-6 transition-transform duration-300 md:hidden
+          className={`fixed left-0 top-0 z-50 h-full w-[75%] max-w-75 bg-[#f3f6f0] p-0 transition-transform duration-300 md:hidden 
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
         >
           {/* 상단 */}
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold">Members</h2>
+          <div className="flex items-center justify-between bg-[#BCCBB8] h-16 m-0 p-6">
+            <h2 className="text-lg font-bold">TeamFlow</h2>
             <button onClick={() => setOpen(false)}>X</button>
           </div>
-
-          <NavItems onClose={() => setOpen(false)} />
+          <NavItems className="p-2" onClose={() => setOpen(false)} />
         </div>
 
         {/* 🔥 메인 영역 */}
@@ -45,10 +44,10 @@ function Layout() {
             <h2 className="font-bold">TeamFlow</h2>
           </div>
 
-          {/* 페이지 */}
+          {/* 페이지*/}
           <div className="flex-1 p-4 md:p-8">
             <Outlet />
-          </div>
+          </div>  
         </div>
 
       </div>

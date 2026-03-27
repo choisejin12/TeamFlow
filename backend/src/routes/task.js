@@ -5,6 +5,31 @@ const Task = require('../models/Task');
 const TeamMember = require('../models/TeamMember');
 const auth = require('../middleware/auth');
 
+
+//통계 조회
+router.get('/stats', auth, async (req, res) => {
+  try {
+    console.log("🔥 stats 실행됨", req.user);
+    const userId = req.user._id;
+    console.log("req.userㄴㄴㄴㄴㄴ:", req.user);
+    const total = await Task.countDocuments({ assigneeId: userId });
+    const done = await Task.countDocuments({ assigneeId: userId, status: 'DONE' });
+    const progress = await Task.countDocuments({ assigneeId: userId, status: 'IN_PROGRESS' });
+    const todo = await Task.countDocuments({ assigneeId: userId, status: 'TODO' });
+
+    res.json({
+      total,
+      done,
+      progress,
+      todo
+    });
+
+  } catch (err) {
+    console.error("stats 에러",err); 
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 할일 생성
 router.post('/', auth, async (req, res) => {
     try {
@@ -133,6 +158,8 @@ router.delete('/:taskId', auth, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
 
 
 module.exports = router;

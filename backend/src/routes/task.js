@@ -9,9 +9,7 @@ const auth = require('../middleware/auth');
 //통계 조회
 router.get('/stats', auth, async (req, res) => {
   try {
-    console.log("🔥 stats 실행됨", req.user);
     const userId = req.user._id;
-    console.log("req.userㄴㄴㄴㄴㄴ:", req.user);
     const total = await Task.countDocuments({ assigneeId: userId });
     const done = await Task.countDocuments({ assigneeId: userId, status: 'DONE' });
     const progress = await Task.countDocuments({ assigneeId: userId, status: 'IN_PROGRESS' });
@@ -26,6 +24,28 @@ router.get('/stats', auth, async (req, res) => {
 
   } catch (err) {
     console.error("stats 에러",err); 
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 내가 담당자인 할일 (다가오는 3개)
+router.get('/mytasks', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const tasks = await Task.find({
+      assigneeId: userId,
+      dueDate: { $gte: new Date() }, // 오늘 이후
+      status: { $ne: 'DONE' } 
+    })
+      .sort({ dueDate: 1 }) // 빠른 날짜 순
+      .limit(3)
+      .populate('assigneeId', 'name');
+
+    res.json({ tasks });
+    
+
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -158,6 +178,7 @@ router.delete('/:taskId', auth, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 
 
 

@@ -37,7 +37,7 @@ router.post('/join', auth, async (req, res) => {
         await member.save();
 
         res.json({
-            message: '팀 가입 성공',
+            message: '팀 가입 성공 🎉',
             teamId: invite.teamId
         });
 
@@ -83,4 +83,5 @@ router.post('/:teamId', auth, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 module.exports = router;

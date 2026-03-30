@@ -47,7 +47,11 @@ router.get('/teams', auth, admin, async (req, res) => {
 // 팀 삭제
 router.delete('/teams/:teamId', auth, admin, async (req, res) => {
     try {
+        const { teamId } = req.params;
+        
         await Team.findByIdAndDelete(req.params.teamId);
+
+        await TeamMember.deleteMany({ teamId });
 
         res.json({ message: '팀 삭제 완료' });
 

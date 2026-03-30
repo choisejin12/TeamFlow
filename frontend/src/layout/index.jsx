@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import NavItems from './Sections/NavItem';
+import { GiHamburgerMenu } from "react-icons/gi";
 
 function Layout() {
   const [open, setOpen] = useState(false);
@@ -39,13 +40,14 @@ function Layout() {
         <div className="flex flex-1 flex-col">
 
           {/* 모바일 헤더 */}
-          <div className="flex items-center justify-between border-b px-4 py-3 md:hidden">
-            <button onClick={() => setOpen(true)}>☰</button>
-            <h2 className="font-bold">TeamFlow</h2>
+          <div className="flex items-center justify-end px-4 py-3 md:hidden">
+            <button onClick={() => setOpen(true)}>
+              <GiHamburgerMenu size={30}/>
+            </button>
           </div>
 
           {/* 페이지*/}
-          <div className="flex-1 p-4 md:p-8">
+          <div className="flex-1 md:p-8">
             <Outlet />
           </div>  
         </div>

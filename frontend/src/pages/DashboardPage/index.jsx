@@ -6,6 +6,9 @@ import { FaCheckCircle } from "react-icons/fa";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { MdAccessTime } from "react-icons/md";
 import NoticeSlider from '../../components/NoticeSlider';
+import TeamCreateModal  from '../../components/TeamCreateModal';
+import { toast } from 'react-toastify';
+import TeamList from '../../components/TeamList';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -18,25 +21,21 @@ function Dashboard() {
     progress: 0,
     todo: 0,
   });
+  const [task,setMyTasks] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [showTeamList, setShowTeamList] = useState(false);
 
-  const colors = [
-  'bg-[#A3BEE9] ',
-  'bg-[#ECB2AF] ',
-  'bg-[#DCC9A2] ',
-  'bg-[#C894FF]',
-  'bg-[#FF94A3] ',
-  'bg-[#E6AD0D] '
-  ];
 
-  const getColor = (str = '') => {
-    if (!str) return 'bg-gray-200';
-    
-    let sum = 0;
-    for (let i = 0; i < str.length; i++) {
-      sum += str.charCodeAt(i);
-    }
-    
-    return colors[sum % colors.length];
+  const handleCreate = async (data) => {
+      try{
+        await axios.post('/teams', data)
+        toast.success('팀 생성 완료 🎉');
+        await fetchTeams();
+        setOpen(false);
+      }catch(err){
+        console.error(err);
+        toast.error('팀 생성 실패 ❌');
+      }
   };
 
   // 🔥 데이터 가져오기
@@ -44,6 +43,7 @@ function Dashboard() {
     fetchTeams();
     fetchNotice();
     fetchStats();
+    fetchMyTasks();
   }, []);
 
   const fetchTeams = async () => {
@@ -73,168 +73,155 @@ function Dashboard() {
     }
   };
 
-  return (
-    <div className="space-y-6">
+  const fetchMyTasks = async () => {
+  try {
+    const res = await axios.get('/tasks/mytasks');
+    setMyTasks(res.data.tasks);
+  } catch (err) {
+    console.error(err);
+  }
+  };
 
+  return (
+    <div className="space-y-4 md:space-y-6 px-4 sm:px-6 md:px-0 max-w-md mx-auto md:max-w-full">
       {/* 🔥 공지 */}
-      <div className="flex items-center gap-3 rounded-xl bg-[#FEF7E9] px-5 py-3 text-sm h-16">
-        <span>📢</span>
-        <span className="font-medium text-[#D94100]">금주의 공지사항</span>
+      <div className="flex items-center gap-2 md:gap-3 rounded-xl bg-[#FEF7E9] px-3 md:px-5 py-2 md:py-3 text-xs md:text-sm h-12 md:h-16 overflow-hidden">
+        <span className="shrink-0">📢</span>
+        <span className="font-medium text-[#D94100] shrink-0 whitespace-nowrap">금주의 공지사항</span>
+        <div className='flex-1 min-w-0 truncate'>
           <NoticeSlider notice={notice} />
+        </div>
       </div>
 
       {/* 🔥 내 팀 목록 */}
       <div className="rounded-2xl bg-gray-100 p-6">
   
-    {/* 헤더 */}
-    <div className="mb-5 flex items-center justify-between">
-      <h2 className="text-lg font-bold">내 팀 목록</h2>
-
-      <div className="flex gap-2">
-        <button
-          onClick={() => navigate('/invite/join')}
-          className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm hover:bg-gray-50"
-        >
-          + 팀 가입하기
-        </button>
-
-        <button
-          onClick={() => navigate('/teams')}
-          className="rounded-md bg-[#819E7A] px-3 py-1 text-sm text-white hover:opacity-90"
-        >
-          + 팀 생성하기
-        </button>
-      </div>
-    </div>
-
-    {/* 팀 리스트 */}
-    <div className="space-y-3">
-      {teams.map((team) => (
-        <div
-          key={team._id}
-          className="flex items-center justify-between bg-white px-5 py-4 transition mb-0 first:rounded-t-2xl last:rounded-b-2xl border-t border-l border-r last:border-b border-[#BCCBB8] " 
-        >
-          {/* 왼쪽 */}
-          <div className="flex items-center gap-4">
-            
-            {/* 아이콘 */}
-            <div className={`flex h-11 w-11 items-center justify-center rounded-full ${getColor(team.teamId)} text-lg font-bold text-white`}>
-              {team.name[0]}
-            </div>
-
-            {/* 텍스트 */}
-            <div>
-              <p className="font-semibold">{team.name}</p>
-              <p className="text-sm text-gray-500">
-                {team.description}
-              </p>
-            </div>
-          </div>
-
-          {/* 오른쪽 */}
-          <div className="flex items-center gap-3 shrink-0">
-            
-            {/* 역할 */}
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-medium w-18   ${
-                team.role === 'OWNER'
-                  ? 'bg-[#819E7A] text-white'
-                  : 'bg-gray-200 text-gray-600'
-              }`}
-            >
-              {team.role || 'MEMBER'}
-            </span>
-
-            {/* 버튼 */}
+        {/* 헤더 */}
+        <div className="mb-5 flex items-center flex-col md:flex-row md:justify-between">
+          <h2 className="text-lg font-bold mb-3 md:mb-0">내 팀 목록</h2>
+          <div className="flex gap-2">
             <button
-              onClick={() => navigate(`/teams/${team._id}`)}
-              className="shrink-0 w-72 h-10 rounded-full border border-gray-300 px-4 py-1 text-sm bg-[#F8F8F8] hover:bg-[#819E7A] hover:text-white text-[#819E7A] font-semibold "
+              onClick={() => navigate('/invite/join')}
+              className="rounded-md border border-gray-300 bg-white px-3 py-1 text-[11px] hover:bg-gray-50 "
             >
-              팀 들어가기 →
+              + 팀 가입하기
             </button>
+
+            <button
+              onClick={() => setOpen(true)}
+              className="rounded-md bg-[#819E7A] px-3 py-1 text-[11px] text-white hover:opacity-90"
+            >
+              + 팀 생성하기
+            </button>
+
+            <button
+            onClick={() => setShowTeamList(prev => !prev)}
+            className="text-[11px] px-3 py-1 rounded-md bg-[#819E7A] hover:opacity-90 text-white"
+            >
+            {showTeamList ? '접기 ▲' : '펼치기 ▼'}
+            </button>
+
+            <TeamCreateModal
+            isOpen={open}
+            onClose={() => setOpen(false)}
+            onCreate={handleCreate}
+            />
           </div>
         </div>
-        ))}
-      </div>
-      </div>
+        {showTeamList &&(<TeamList teams={teams} />)}
+      </div>      
 
         {/* 🔥 캘린더 + 할일 */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           
-          {/* 캘린더 (임시) */}
+          {/* 캘린더 */}
           <div className="rounded-xl bg-gray-50 p-5">
             <MyCalendar/>
           </div>
 
           {/* 오늘 할일 */}
           <div className="space-y-2 rounded-xl bg-gray-50 p-7">
+            {
+              task.length === 0 ? (
+                  <div className="text-center text-gray-400 py-10">
+                    할 일이 없습니다.
+                  </div>
+                ) : 
+              (task.map((task) => {
+                const date = new Date(task.dueDate);
+                const day = date.toLocaleDateString('ko-KR', {
+                  day: 'numeric'
+                });
 
-            <div className="flex items-center rounded-full border-2 border-[#7A9276] bg-white h-16 pr-4 overflow-hidden mb-8">
-              {/* 왼쪽 날짜 */}
-              <div className="flex h-16 w-25 items-center justify-center rounded-full border-r-2 border-[#7A9276] bg-[#C9D6C5] text-3xl font-semibold text-[#5E775A]">
-                24
-              </div>
-              {/* 오른쪽 내용 */}
-              <div className="ml-4">
-                <p className="text-lg font-semibold text-[#5E775A]">
-                  웹디자인 완성하기
-                </p>
-                <p className="text-sm text-[#5E775A] opacity-80">
-                  18:00
-                </p>
-              </div>
-            </div>
+                const time = date.toLocaleTimeString('ko-KR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone: 'Asia/Seoul'
+                });
 
-            <div className="flex items-center rounded-full border-2 border-[#7A9276] bg-white h-16 pr-4 overflow-hidden mb-8">
-              {/* 왼쪽 날짜 */}
-              <div className="flex h-16 w-25 items-center justify-center rounded-full border-r-2 border-[#7A9276] bg-[#C9D6C5] text-3xl font-semibold text-[#5E775A]">
-                24
-              </div>
-              {/* 오른쪽 내용 */}
-              <div className="ml-4">
-                <p className="text-lg font-semibold text-[#5E775A]">
-                  웹디자인 완성하기
-                </p>
-                <p className="text-sm text-[#5E775A] opacity-80">
-                  18:00
-                </p>
-              </div>
-            </div>
+                return(
+                  <div
+                    key={task._id}
+                    className="flex items-center rounded-full border-2 border-[#7A9276] bg-white 
+                    h-12 md:h-16 pr-3 md:pr-4 overflow-hidden mb-4 md:mb-8"
+                  >
+                    {/* 날짜 */}
+                    <div className="flex h-12 md:h-16 w-16 md:w-25 items-center justify-center rounded-full border-r-2 border-[#7A9276] bg-[#C9D6C5] 
+                      text-xl md:text-3xl font-semibold text-[#5E775A]">
+                      {day}
+                    </div>
 
+                    {/* 텍스트 */}
+                    <div className="ml-3 md:ml-4 flex-1 min-w-0">
+                      <p className="text-sm md:text-lg font-semibold text-[#5E775A] truncate">
+                        {task.title}
+                      </p>
+                      <p className="text-xs md:text-sm text-[#5E775A] opacity-80">
+                        {time}
+                      </p>
+                    </div>
+                  </div>
 
-            <div className="flex items-center rounded-full border-2 border-[#7A9276] bg-white h-16 pr-4 overflow-hidden">
-              {/* 왼쪽 날짜 */}
-              <div className="flex h-16 w-25 items-center justify-center rounded-full border-r-2 border-[#7A9276] bg-[#C9D6C5] text-3xl font-semibold text-[#5E775A]">
-                24
-              </div>
-              {/* 오른쪽 내용 */}
-              <div className="ml-4">
-                <p className="text-lg font-semibold text-[#5E775A]">
-                  웹디자인 완성하기
-                </p>
-                <p className="text-sm text-[#5E775A] opacity-80">
-                  18:00
-                </p>
-              </div>
-            </div> 
-
+              )
+            })
+            )}
           </div>
         </div>
 
         {/* 🔥 통계 */}
-        <div className="rounded-xl bg-gray-50 p-5">
-          <h3 className="mb-3 text-lg font-bold">
+        <div className="rounded-xl bg-gray-50 p-4 md:p-5">
+          <h3 className="mb-3 text-base md:text-lg font-bold">
             세진님의 할일 통계
           </h3>
 
-          <div className="flex flex-wrap gap-6 text-sm">
-            <div className='text-2xl font-bold'>  총 {stats.total}개</div>
-            <div className='flex justify-between text-[#819E7A] text-xl'> <FaCheckCircle className="mr-3" size={30}/>완료 {stats.done}개</div>
-            <div className='flex justify-between text-[#819E7A] text-xl'> <FaRegCheckCircle className="mr-3" size={30}/>진행중 {stats.progress}개</div>
-            <div className='flex justify-between text-[#819E7A] text-xl'> <MdAccessTime className="mr-3" size={30}/>대기중 {stats.todo}개</div>
+          <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:gap-6 text-sm">
+            
+            {/* 총 개수 */}
+            <div className="text-lg md:text-2xl font-bold">
+              총 {stats.total}개
+            </div>
+
+            {/* 진행중 */}
+            <div className="flex items-center justify-start text-[#819E7A] text-base md:text-xl">
+              <FaRegCheckCircle className="mr-2 md:mr-3" size={20} />
+              진행중 {stats.progress}개
+            </div>
+
+            {/* 대기중 */}
+            <div className="flex items-center justify-start text-[#819E7A] text-base md:text-xl">
+              <MdAccessTime className="mr-2 md:mr-3" size={20} />
+              대기중 {stats.todo}개
+            </div>
+
+            {/* 완료 */}
+            <div className="flex items-center justify-start text-[#819E7A] text-base md:text-xl">
+              <FaCheckCircle className="mr-2 md:mr-3" size={20} />
+              완료 {stats.done}개
+            </div>
+
           </div>
         </div>
-
     </div>
   );
 }

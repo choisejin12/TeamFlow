@@ -5,11 +5,32 @@ const TeamMember = require('../models/TeamMember');
 const auth = require('../middleware/auth');
 const Task = require('../models/Task');
 
+// 내가 속한 팀 목록
+router.get('/', auth, async (req, res) => {
+    try {
+        const teamMembers = await TeamMember.find({
+            userId: req.user._id
+        }).populate('teamId');
+
+        const teams = teamMembers
+        .filter(tm => tm.teamId)
+        .map(tm => ({
+            teamId: tm.teamId._id,
+            name: tm.teamId.name,
+            description: tm.teamId.description,
+            role: tm.role,
+            color: tm.teamId.color
+        }));
+        res.json({ teams });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // 팀 생성
 router.post('/', auth, async (req, res) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, color } = req.body;
         if (!name) {
             return res.status(400).json({ message: '팀 이름 필요' });
         }
@@ -17,7 +38,8 @@ router.post('/', auth, async (req, res) => {
         const team = new Team({
             name,
             description,
-            createdBy: req.user._id
+            createdBy: req.user._id,
+            color
         });
         await team.save();
         // 2. 만든 사람을 OWNER로 등록
@@ -38,24 +60,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 
-// 내가 속한 팀 목록
-router.get('/', auth, async (req, res) => {
-    try {
-        const teamMembers = await TeamMember.find({
-            userId: req.user._id
-        }).populate('teamId');
 
-        const teams = teamMembers.map(tm => ({
-            teamId: tm.teamId._id,
-            name: tm.teamId.name,
-            description: tm.teamId.description,
-            role: tm.role
-        }));
-        res.json({ teams });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 
 
 // 🔥 팀 상세 조회

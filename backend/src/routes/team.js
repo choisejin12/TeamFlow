@@ -4,6 +4,8 @@ const Team = require('../models/Team');
 const TeamMember = require('../models/TeamMember');
 const auth = require('../middleware/auth');
 const Task = require('../models/Task');
+const Activity = require('../models/Activity');
+const mongoose = require('mongoose');
 
 // 내가 속한 팀 목록
 router.get('/', auth, async (req, res) => {
@@ -23,6 +25,7 @@ router.get('/', auth, async (req, res) => {
         }));
         res.json({ teams });
     } catch (err) {
+        console.error('🔥 ERROR:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -50,11 +53,20 @@ router.post('/', auth, async (req, res) => {
         });
 
         await teamMember.save();
+
+        await Activity.create({
+            type: 'TEAM_CREATE',
+            message: `${req.user.name}님이 팀을 생성했습니다.`,
+            userId: req.user._id,
+            teamId: team._id
+        });
+
         res.status(201).json({
             message: '팀 생성 성공',
             team
         });
     } catch (err) {
+        console.error('🔥 ERROR:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -70,6 +82,9 @@ router.get('/:teamId', auth, async (req, res) => {
 
         // 1. 팀 확인
         const team = await Team.findById(teamId);
+        if (!mongoose.Types.ObjectId.isValid(teamId)) {
+            return res.status(400).json({ message: '잘못된 teamId' });
+        }
         if (!team) return res.status(404).json({ message: '팀 없음' });
 
         // 2. 권한 체크
@@ -86,7 +101,9 @@ router.get('/:teamId', auth, async (req, res) => {
         const members = await TeamMember.find({ teamId })
             .populate('userId', 'name email');
 
-        const memberList = members.map(m => ({
+        const memberList = members
+        .filter(m => m.userId)
+        .map(m => ({
             userId: m.userId._id,
             name: m.userId.name,
             email: m.userId.email,
@@ -96,19 +113,22 @@ router.get('/:teamId', auth, async (req, res) => {
         // 🔥 4. 내 할일
         const myTasks = await Task.find({
             teamId,
-            createdBy: req.user._id
+            assigneeId: req.user._id
         });
 
         // 🔥 5. 팀 할일
-        const teamTasks = await Task.find({ teamId })
-            .populate('assigneeId', 'name');
+        const teamTasks = await Task.find({
+            teamId,
+            assigneeId: { $ne: req.user._id } 
+        }).populate('assigneeId', 'name');
 
         res.json({
             team: {
-                id: team._id,
+                _id: team._id,
                 name: team.name,
                 description: team.description,
-                myRole: myMembership.role
+                myRole: myMembership.role,
+                color: team.color
             },
             members: memberList,
             myTasks: myTasks.map(t => ({
@@ -129,6 +149,7 @@ router.get('/:teamId', auth, async (req, res) => {
         });
 
     } catch (err) {
+        console.error('🔥 ERROR:', err);
         res.status(500).json({ error: err.message });
     }
 });

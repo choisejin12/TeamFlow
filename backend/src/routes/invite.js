@@ -4,7 +4,7 @@ const router = express.Router();
 const Invite = require('../models/Invite');
 const TeamMember = require('../models/TeamMember');
 const auth = require('../middleware/auth');
-
+const Activity = require('../models/Activity');
 
 // 팀 가입
 router.post('/join', auth, async (req, res) => {
@@ -35,6 +35,12 @@ router.post('/join', auth, async (req, res) => {
         });
 
         await member.save();
+        await Activity.create({
+            type: 'MEMBER_ADD',
+            message: `${req.user.name}님이 새로운 멤버가 되었습니다.`,
+            userId: req.user._id,
+            teamId: invite.teamId
+        });
 
         res.json({
             message: '팀 가입 성공 🎉',
@@ -59,7 +65,7 @@ router.post('/:teamId', auth, async (req, res) => {
         });
 
         if (!membership || membership.role !== 'OWNER') {
-            return res.status(403).json({ message: '팀장만 가능' });
+            return res.status(403).json({ message: '팀장만 초대코드를 생성할 수 있습니다.' });
         }
 
         // 🔥 코드 생성 (랜덤)
@@ -75,7 +81,7 @@ router.post('/:teamId', auth, async (req, res) => {
         await invite.save();
 
         res.json({
-            message: '초대코드 생성',
+            message: '초대코드가 생성되었습니다. 초대코드는 1시간동안만 유효합니다.',
             code
         });
 

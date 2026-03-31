@@ -3,10 +3,10 @@ import axios from '../../utils/axios';
 import NoticeSlider from '../../components/NoticeSlider';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-
+import { useNavigate } from 'react-router-dom';
 
 const JoinPage = () => {
-
+  const navigate = useNavigate();
 
   const [notice, setNotice] = useState([]); 
   const [code,setCode] = useState();
@@ -27,14 +27,12 @@ const JoinPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); 
-
     if (code !== confirmCode) {
       toast.error('초대코드가 일치하지 않습니다.');
       return;
     }
-
     try {
-      await axios.post('/invite/join', { code })
+      const res = await axios.post('/invite/join', { code })
       toast.success(res.data.message);
       navigate(`/teams/${res.data.teamId}`);
     } catch (err) {
@@ -111,9 +109,6 @@ const JoinPage = () => {
               </p>
             </form>
             {/*  END  */}
-
-
-
 
           </div>
         </div>

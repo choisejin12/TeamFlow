@@ -4,7 +4,7 @@ const router = express.Router();
 const Task = require('../models/Task');
 const TeamMember = require('../models/TeamMember');
 const auth = require('../middleware/auth');
-
+const Activity = require('../models/Activity');
 
 //통계 조회
 router.get('/stats', auth, async (req, res) => {
@@ -78,6 +78,13 @@ router.post('/', auth, async (req, res) => {
         });
 
         await task.save();
+
+        await Activity.create({
+            type: 'TASK_ADD',
+            message: `${req.user.name}님이 할일을 추가했습니다.`,
+            userId: req.user._id,
+            teamId: teamId
+        });
 
         res.status(201).json({
             message: 'Task 생성 완료',

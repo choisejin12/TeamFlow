@@ -4,6 +4,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Team = require('../models/Team');
 const Notice = require('../models/Notice');
+const Activity = require('../models/Activity');
 
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
@@ -76,6 +77,12 @@ router.post('/notices', auth, admin, async (req, res) => {
 
         await notice.save();
 
+        await Activity.create({
+            type: 'NOTICE_CREATE',
+            message: `새로운 공지사항이 등록되었습니다.`,
+            userId: req.user._id
+        });
+
         res.status(201).json({
             message: '공지 생성 완료',
             notice
@@ -117,6 +124,21 @@ router.delete('/notices/:id', auth, admin, async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+//로그조회
+router.get('/activities', async (req, res) => {
+  try {
+    const activities = await Activity
+      .find()
+      .populate('teamId', 'name')
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res.json({ activities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

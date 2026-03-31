@@ -8,8 +8,10 @@ import TeamList from '../../components/TeamList';
 import { FaCheckCircle } from "react-icons/fa";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { MdAccessTime } from "react-icons/md";
+import { useNavigate } from 'react-router-dom';
 
 const TeamPage = () => {
+  const navigate = useNavigate();
 
   const [notice, setNotice] = useState([]);  
   const [teams, setTeams] = useState([]);
@@ -23,6 +25,7 @@ const TeamPage = () => {
     progress: 0,
     todo: 0,
   });  
+  const [activities,setActivities] = useState([]);
 
   const filteredTeams = teams.filter((team) => {
     if (filter === 'ALL') return true;
@@ -41,15 +44,42 @@ const TeamPage = () => {
       }
   };
 
+  const getIcon = (type) => {
+  switch(type) {
+    case 'TEAM_CREATE':
+      return '🟢';
+    case 'MEMBER_ADD':
+      return '👤';
+    case 'TASK_COMPLETE':
+      return '✔️';
+    case 'NOTICE_CREATE':
+      return '📢';
+    default:
+      return '📌';
+  }
+  };
+
   useEffect(() => {
     fetchTeams();
     fetchNotice();
     fetchStats();
+    
   }, []);
 
   useEffect(() => {
-  getRolenum();
+    getRolenum();
   }, [teams]);
+
+  useEffect(() => {
+    fetchActivities();
+  }, [activities]);
+
+
+
+  const fetchActivities = async () => {
+    const res = await axios.get('/admin/activities');
+    setActivities(res.data.activities);
+  };
 
   const fetchStats = async () => {
     try {
@@ -222,25 +252,36 @@ const TeamPage = () => {
       {/* END */}
 
       {/* 최근 활동 / 할일 부분 */}
-      <div className='flex flex-col md:flex-row md:justify-between'>
+      <div className='flex flex-col md:flex-row md:justify-between gap-4 md:gap-3'>
         {/* 최근 활동 */}
-        <div>
-          최근활동
+
+        <div className='rounded-xl bg-gray-50 p-4 md:p-5 md:w-full md:mr-5'>
+          <h3 className="mb-3 text-base md:text-lg font-ligt">
+            최근 활동
+          </h3>
+          <div className='bg-white border border-[#BCCBB8] p-4'>
+            {activities.map((item) => (
+              <div className='border-b border-[#BCCBB8] py-3'>
+                <span className='mr-2'>{getIcon(item.type)}</span>
+                <span className='mr-2 font-semibold'>{item.teamId?.name || "NOTICE"}</span>
+                <span>{item.message}</span>
+              </div>
+            ))}
+          </div>
+
         </div>
 
         {/* 할일 */}          
-        <div className="rounded-xl bg-gray-50 p-4 md:p-5">
-          <h3 className="mb-3 text-base md:text-lg font-bold">
+        <div className="rounded-xl bg-gray-50 p-4 md:p-5 md:w-200 mb-3 md:mb-0">
+          <h3 className="mb-3 text-base md:text-lg font-light">
             세진님의 할일 통계
           </h3>
+          {/* 총 개수 */}
+          <div className="text-lg md:text-2xl font-bold">
+            총 {stats.total}개
+          </div>
 
-          <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:gap-6 text-sm">
-            
-            {/* 총 개수 */}
-            <div className="text-lg md:text-2xl font-bold">
-              총 {stats.total}개
-            </div>
-
+          <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:gap-6 text-sm mt-2">
             {/* 진행중 */}
             <div className="flex items-center justify-start text-[#819E7A] text-base md:text-xl">
               <FaRegCheckCircle className="mr-2 md:mr-3" size={20} />

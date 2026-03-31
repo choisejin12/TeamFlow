@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 
 function TeamList({ teams }) {
   const navigate = useNavigate();
-
   return (
     <>
             {/* 팀 리스트 */}
@@ -72,7 +71,9 @@ function TeamList({ teams }) {
                 아직 가입된 팀이 없습니다.
               </div>
             )}
-          {teams.map((team) => (
+          {teams
+          .filter((team) => team?.teamId)
+          .map((team) => (
             <div
               key={team._id}
               className="flex items-center justify-between bg-white px-5 py-4 transition mb-0 first:rounded-t-2xl last:rounded-b-2xl border-t border-l border-r last:border-b border-[#BCCBB8]"
@@ -106,7 +107,7 @@ function TeamList({ teams }) {
                 </span>
 
                 <button
-                  onClick={() => navigate(`/teams/${team._id}`)}
+                  onClick={() => navigate(`/teams/${team?.teamId}`)}
                   className="shrink-0 w-72 h-10 rounded-full border border-gray-300 px-4 py-1 text-sm bg-[#F8F8F8] hover:bg-[#819E7A] hover:text-white text-[#819E7A] font-semibold"
                 >
                   팀 들어가기 →

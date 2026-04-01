@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 function AdminRoute() {
   const { userData, isAuth } = useSelector(state => state.user);
   const navigate = useNavigate();
-  console.log(userData)
   useEffect(() => {
     if (isAuth && userData?.platformRole !== 'ADMIN') {
       toast.error("관리자만 접근 가능합니다.", {

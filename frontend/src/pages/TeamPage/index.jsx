@@ -141,7 +141,7 @@ const TeamPage = () => {
       {/* END */}
 
       {/* 팀 통계 부분*/}
-      <div className='flex flex-col md:flex-row gap-2 md:gap-3 bg-[#F8F8F8] p-3 md:p-5'>
+      <div className='flex flex-col md:flex-row gap-2 md:gap-3 bg-[#F8F8F8] p-3 md:p-5 fade-in hover-scale hover-shadow'>
         
         <div className='bg-white w-full md:w-80 border border-gray-300 md:border-0 rounded-lg p-3 md:p-6 text-[#4A4A4A]'>
           <div className='text-xs md:text-base'>총 팀</div>
@@ -197,7 +197,7 @@ const TeamPage = () => {
 
 
       {/* 팀 목록 부분 */}
-      <div className="rounded-2xl bg-[#F8F8F8] p-6">
+      <div className="rounded-2xl bg-[#F8F8F8] p-6 fade-in hover-scale hover-shadow">
   
         {/* 헤더 */}
         <div className="mb-5 flex items-center justify-between">
@@ -255,13 +255,13 @@ const TeamPage = () => {
       <div className='flex flex-col md:flex-row md:justify-between gap-4 md:gap-3'>
         {/* 최근 활동 */}
 
-        <div className='rounded-xl bg-gray-50 p-4 md:p-5 md:w-full md:mr-5'>
+        <div className='rounded-xl bg-gray-50 p-4 md:p-5 md:w-full md:mr-5 fade-in hover-scale hover-shadow'>
           <h3 className="mb-3 text-base md:text-lg font-ligt">
             최근 활동
           </h3>
           <div className='bg-white border border-[#BCCBB8] p-4'>
             {activities.map((item) => (
-              <div className='border-b border-[#BCCBB8] py-3'>
+              <div key={item._id} className='border-b border-[#BCCBB8] py-3'>
                 <span className='mr-2'>{getIcon(item.type)}</span>
                 <span className='mr-2 font-semibold'>{item.teamId?.name || "NOTICE"}</span>
                 <span>{item.message}</span>
@@ -272,7 +272,7 @@ const TeamPage = () => {
         </div>
 
         {/* 할일 */}          
-        <div className="rounded-xl bg-gray-50 p-4 md:p-5 md:w-200 mb-3 md:mb-0">
+        <div className="rounded-xl bg-gray-50 p-4 md:p-5 md:w-200 mb-3 md:mb-0 fade-in hover-scale hover-shadow">
           <h3 className="mb-3 text-base md:text-lg font-light">
             세진님의 할일 통계
           </h3>

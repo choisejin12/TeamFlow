@@ -84,7 +84,7 @@ function Login() {
             <div className='mb-2'>
               <label htmlFor="email" className='text-sm font-semibold text-gray-800'>이메일</label>
               <input type="email" id="email" placeholder="Enter your email"
-              {...register('email', userEmail)} className='w-full px-4 h-13 py-2 mt-2 bg-white border rounded-4xl border-[#727272]'/>
+              {...register('email', userEmail)} className='w-full px-4 h-13 py-2 mt-2 bg-white border rounded-4xl border-[#727272] focus:ring-2 focus:ring-[#BCCBB8] transition-all'/>
               {/* 
               register 👉 검증까지 자동 연결됨 
               'email' 👉 폼 데이터의 key 이름 -> 결과적으로 이렇게 됨 onSubmit({ email, password, name })
@@ -110,7 +110,7 @@ function Login() {
             <div className='mb-2'>
               <label htmlFor="password" className='text-sm font-semibold text-gray-800'>비밀번호</label>
               <input type="password" id="password" placeholder="Enter your password"
-              {...register('password', userPassword)} className='w-full h-13 px-4 py-2 mt-2 bg-white border rounded-4xl border-[#727272]'/>
+              {...register('password', userPassword)} className='w-full h-13 px-4 py-2 mt-2 bg-white border rounded-4xl border-[#727272] focus:ring-2 focus:ring-[#BCCBB8] transition-all'/>
               {
                 errors?.password &&
                 <div>
@@ -122,7 +122,7 @@ function Login() {
             </div>
 
             <div className='mt-6'>
-              <button type='submit' className='w-full px-4 py-2 text-white duration-200 bg-black rounded-md hover:bg-gray-700'>
+              <button type='submit' className='w-full px-4 py-2 text-white duration-200 bg-black rounded-md hover:bg-gray-700 hover:opacity-90 active:scale-95 transition'>
                 로그인 하기
               </button>
             </div>

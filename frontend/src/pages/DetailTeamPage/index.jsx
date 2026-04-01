@@ -1,6 +1,7 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import { IoSettingsSharp } from "react-icons/io5";
 import { FaUserAstronaut } from "react-icons/fa6";
@@ -10,6 +11,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 const DetailTeamPage = () => {
+  const navigate = useNavigate();
 
   const { teamId } = useParams();
   const [data,setdata] = useState();
@@ -23,6 +25,7 @@ const DetailTeamPage = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editDate, setEditDate] = useState("");
   const [editStatus, setEditStatus] = useState("");
+  const [showSet, setShowSet] = useState(false);
 
   const userData = useSelector(state => state.user?.userData);
 
@@ -54,7 +57,18 @@ const DetailTeamPage = () => {
       default:
         return "bg-gray-400";
     }
-  };  
+  }; 
+
+  const TeamDelete = async () => {
+    try{
+      console.log("🔥🔥🔥진입")
+      const res = await axios.delete(`/teams/${teamId}`)
+      toast.success(res.data.message)
+      navigate('/teams')
+    }catch(err){
+      toast.error(err.response?.data?.message)
+    }
+  }
 
   const handleEditStart = (task) => {
     setEditTaskId(task.taskId);
@@ -184,8 +198,14 @@ const DetailTeamPage = () => {
         </div>
 
         {/* 🔥 PC용 설정 아이콘 */}
-        <div className='hidden md:flex items-center mr-5'>
-          <IoSettingsSharp size={30}/>
+        <div className='hidden md:flex flex-col items-center mr-5 relative text-center'>
+          <IoSettingsSharp onClick={() => setShowSet(prev => !prev)} className='cursor-pointer  ' size={30}/>
+          {showSet && 
+          (
+            <div className='shadow-[0px_0px_4px_rgba(0,0,0,0.25)] px-4 py-2 absolute top-10 min-w-30 '>
+              <button onClick={TeamDelete} className='cursor-pointer'>팀 삭제하기</button>
+            </div>
+          )}
         </div>
       </div>
       {/* END */}
@@ -193,7 +213,7 @@ const DetailTeamPage = () => {
       {/* 멤버 목록 */}
       <div className="rounded-xl bg-[#F8F8F8] px-4 md:px-10 py-5">
 
-        <div className='flex justify-between items-center'>
+        <div className='flex justify-between items-center '>
           <div className='text-base md:text-xl text-[#4B4B4B]'>멤버목록</div>
           <button
           onClick={createCode}
@@ -203,7 +223,7 @@ const DetailTeamPage = () => {
           </button>
         </div>
 
-        <div className=" mt-5">
+        <div className=" mt-5 ">
           {member
           .filter((member) => member?.userId)
           .map((member) => (
@@ -294,7 +314,7 @@ const DetailTeamPage = () => {
                     <select
                       value={editStatus}
                       onChange={(e) => setEditStatus(e.target.value)}
-                      className="border rounded px-2 py-1 text-sm"
+                      className="border rounded px-2 py-1 text-sm transition-all duration-200 focus:scale-105"
                     >
                       <option value="TODO">진행중</option>
                       <option value="IN_PROGRESS">대기중</option>

@@ -32,7 +32,6 @@ router.get('/stats', auth, async (req, res) => {
 router.get('/mytasks', auth, async (req, res) => {
   try {
     const userId = req.user._id;
-
     const tasks = await Task.find({
       assigneeId: userId,
       dueDate: { $gte: new Date() }, // 오늘 이후
@@ -41,9 +40,21 @@ router.get('/mytasks', auth, async (req, res) => {
       .sort({ dueDate: 1 }) // 빠른 날짜 순
       .limit(3)
       .populate('assigneeId', 'name');
+    res.json({ tasks });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+router.get('/calendar', auth, async (req, res) => {
+  try {
+    const tasks = await Task.find({
+      assigneeId: req.user._id
+    });
 
     res.json({ tasks });
-    
 
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -53,7 +64,7 @@ router.get('/mytasks', auth, async (req, res) => {
 // 할일 생성
 router.post('/', auth, async (req, res) => {
     try {
-        const { teamId, title, dueDate } = req.body;
+        const { teamId, title, dueDate, assigneeId  } = req.body;
 
         if (!teamId || !title) {
             return res.status(400).json({ message: '필수값 없음' });
@@ -74,7 +85,7 @@ router.post('/', auth, async (req, res) => {
             title,
             dueDate,
             createdBy: req.user._id,
-            assigneeId: req.user._id // 기본은 본인
+            assigneeId: assigneeId || req.user._id
         });
 
         await task.save();

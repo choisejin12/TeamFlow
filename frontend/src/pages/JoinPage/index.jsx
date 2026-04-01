@@ -88,17 +88,17 @@ const JoinPage = () => {
             <form onSubmit={handleSubmit}>
               <div>
                 <input type="text" placeholder="Enter invite code ...."
-                className='w-full h-13 px-4 py-2 mt-2 bg-[#819E7A]'
+                className='w-full h-13 px-4 py-2 mt-2 bg-[#819E7A] focus:ring-2 focus:ring-[#BCCBB8] transition-all'
                 onChange={(e) => setCode(e.target.value)} />
               </div>
               <div>
                 <input type="text" placeholder="Enter invite code again ...."
-                className='w-full h-13 px-4 py-2 mt-2 bg-[#819E7A]'
+                className='w-full h-13 px-4 py-2 mt-2 bg-[#819E7A] focus:ring-2 focus:ring-[#BCCBB8] transition-all'
                 onChange={(e) => setConfirmCode(e.target.value)}/>
               </div>
 
               <div className='flex justify-center mt-5'>
-                <button type='submit' className=' w-25 md:w-40 p-3 bg-[#819E7A] text-white '>가입하기</button>
+                <button type='submit' className=' w-25 md:w-40 p-3 bg-[#819E7A] text-white hover:opacity-90 active:scale-95 transition'>가입하기</button>
               </div>
 
               <p className='mt-2 text-xs font-light text-center text-gray-700'>

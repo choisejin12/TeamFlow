@@ -71,11 +71,11 @@ function NavItems({ className = "", onClose }) {
       </div>
 
       {/* 로그아웃 */}
-      <div className='flex text-green-700'>
+      <div className='flex text-green-700 ml-5 md:ml-0 pb-6'>
         <FaSignOutAlt/>
         <button
           onClick={handleLogout}
-          className="ml-2 text-left text-sm  hover:underline"
+          className="ml-2 text-left text-sm hover:underline"
         >Logout
         </button>
       </div>

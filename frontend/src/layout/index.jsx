@@ -8,10 +8,10 @@ function Layout() {
 
   return (
     <div className="min-h-screen bg-[#dfe8d8] p-4 md:p-6">
-      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-[1400px] overflow-hidden rounded-[30px] bg-white shadow-xl">
+      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-350 overflow-hidden rounded-[30px] bg-white shadow-xl">
 
         {/* 🔥 데스크톱 사이드바 */}
-        <aside className="hidden w-[260px] bg-[#f3f6f0] p-6 md:block">
+        <aside className="hidden w-65 bg-[#f3f6f0] p-6 md:block">
           <NavItems />
         </aside>
 
@@ -25,15 +25,17 @@ function Layout() {
 
         {/* 🔥 모바일 사이드 메뉴 */}
         <div
-          className={`fixed left-0 top-0 z-50 h-full w-[75%] max-w-75 bg-[#f3f6f0] p-0 transition-transform duration-300 md:hidden 
+          className={`fixed left-0 top-0 z-50 h-screen w-[75%] max-w-75 bg-[#f3f6f0] transition-transform duration-300 md:hidden flex flex-col
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
         >
           {/* 상단 */}
-          <div className="flex items-center justify-between bg-[#BCCBB8] h-16 m-0 p-6">
+          <div className="flex items-center justify-between bg-[#BCCBB8] h-16 shrink-0 px-6">
             <h2 className="text-lg font-bold">TeamFlow</h2>
             <button onClick={() => setOpen(false)}>X</button>
           </div>
-          <NavItems className="p-2" onClose={() => setOpen(false)} />
+
+          {/* 메뉴 영역 */}
+          <NavItems className="flex-1 p-2 overflow-y-auto" onClose={() => setOpen(false)} />
         </div>
 
         {/* 🔥 메인 영역 */}

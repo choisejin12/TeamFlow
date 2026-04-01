@@ -23,7 +23,7 @@ function Dashboard() {
   });
   const [task,setMyTasks] = useState([]);
   const [open, setOpen] = useState(false);
-  const [showTeamList, setShowTeamList] = useState(false);
+  const [showTeamList, setShowTeamList] = useState(true);
 
 
   const handleCreate = async (data) => {
@@ -94,7 +94,7 @@ function Dashboard() {
       </div>
 
       {/* 🔥 내 팀 목록 */}
-      <div className="rounded-2xl bg-gray-100 p-6">
+      <div className="rounded-2xl bg-gray-100 p-6 fade-in hover-scale hover-shadow">
   
         {/* 헤더 */}
         <div className="mb-5 flex items-center flex-col md:flex-row md:justify-between">
@@ -132,15 +132,15 @@ function Dashboard() {
       </div>      
 
         {/* 🔥 캘린더 + 할일 */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 ">
           
           {/* 캘린더 */}
-          <div className="rounded-xl bg-gray-50 p-5">
+          <div className="rounded-xl bg-gray-50 p-5 fade-in hover-scale hover-shadow">
             <MyCalendar/>
           </div>
 
           {/* 오늘 할일 */}
-          <div className="space-y-2 rounded-xl bg-gray-50 p-7">
+          <div className="space-y-2 rounded-xl bg-gray-50 p-7 fade-in hover-scale hover-shadow">
             {
               task.length === 0 ? (
                   <div className="text-center text-gray-400 py-10">
@@ -190,7 +190,7 @@ function Dashboard() {
         </div>
 
         {/* 🔥 통계 */}
-        <div className="rounded-xl bg-gray-50 p-4 md:p-5">
+        <div className="rounded-xl bg-gray-50 p-4 md:p-5 mb-5 md:mb-0 fade-in hover-scale hover-shadow">
           <h3 className="mb-3 text-base md:text-lg font-bold">
             세진님의 할일 통계
           </h3>

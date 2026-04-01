@@ -5,20 +5,92 @@ const User = require('../models/User');
 const Team = require('../models/Team');
 const Notice = require('../models/Notice');
 const Activity = require('../models/Activity');
+const TeamMember = require('../models/TeamMember');
+const mongoose = require('mongoose');
 
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 
 //전체 유저 조회
 router.get('/users', auth, admin, async (req, res) => {
-    try {
-        const users = await User.find().select('-password');
+   
+  try {
+    const users = await User.aggregate([
 
-        res.json({ users });
+      // ✅ 팀 개수 (최적화)
+      {
+        $lookup: {
+          from: 'teammembers',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$userId', '$$userId'] }
+              }
+            },
+            {
+              $count: 'count'
+            }
+          ],
+          as: 'teamCountArr'
+        }
+      },
 
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+      // ✅ task 개수 (최적화)
+      {
+        $lookup: {
+          from: 'tasks',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$assigneeId', '$$userId'] }
+              }
+            },
+            {
+              $count: 'count'
+            }
+          ],
+          as: 'taskCountArr'
+        }
+      },
+
+      // ✅ count 추출 + 날짜 포맷
+      {
+        $addFields: {
+          teamCount: {
+            $ifNull: [{ $arrayElemAt: ['$teamCountArr.count', 0] }, 0]
+          },
+          taskCount: {
+            $ifNull: [{ $arrayElemAt: ['$taskCountArr.count', 0] }, 0]
+          },
+
+            createdAt: {
+            $dateToString: {
+                format: "%Y-%m-%d",
+                date: { $ifNull: ['$createdAt', new Date()] }
+            }
+            }
+        }
+      },
+
+      // ✅ 불필요 데이터 제거
+      {
+        $project: {
+          password: 0,
+          teamCountArr: 0,
+          taskCountArr: 0
+        }
+      }
+
+    ]);
+
+    res.json({ users });
+
+  } catch (err) {
+    console.error("🔥 에러:", err);  // 이거 추가
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // 유저 삭제
@@ -26,7 +98,7 @@ router.delete('/users/:userId', auth, admin, async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.userId);
 
-        res.json({ message: '팀 삭제 완료' });
+        res.json({ message: '유저 삭제 완료' });
 
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -35,14 +107,116 @@ router.delete('/users/:userId', auth, admin, async (req, res) => {
 
 // 전체 팀 조회
 router.get('/teams', auth, admin, async (req, res) => {
-    try {
-        const teams = await Team.find();
+  try {
+    const teams = await Team.aggregate([
 
-        res.json({ teams });
+      // ✅ 멤버 수
+      {
+        $lookup: {
+          from: 'teammembers',
+          let: { teamId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$teamId', '$$teamId'] }
+              }
+            },
+            {
+              $count: 'count'
+            }
+          ],
+          as: 'memberCountArr'
+        }
+      },
 
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+      // ✅ task 수
+      {
+        $lookup: {
+          from: 'tasks',
+          let: { teamId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$teamId', '$$teamId'] }
+              }
+            },
+            {
+              $count: 'count'
+            }
+          ],
+          as: 'taskCountArr'
+        }
+      },
+
+      // ✅ 팀장 찾기
+      {
+        $lookup: {
+          from: 'teammembers',
+          let: { teamId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$teamId', '$$teamId'] },
+                role: 'OWNER'
+              }
+            },
+            { $limit: 1 } // 팀장은 1명 가정
+          ],
+          as: 'owner'
+        }
+      },
+
+      // ✅ 팀장 user 정보 가져오기
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'owner.userId',
+          foreignField: '_id',
+          as: 'ownerInfo'
+        }
+      },
+
+      // ✅ 데이터 정리
+      {
+        $addFields: {
+          memberCount: {
+            $ifNull: [{ $arrayElemAt: ['$memberCountArr.count', 0] }, 0]
+          },
+          taskCount: {
+            $ifNull: [{ $arrayElemAt: ['$taskCountArr.count', 0] }, 0]
+          },
+
+          ownerName: {
+            $ifNull: [{ $arrayElemAt: ['$ownerInfo.name', 0] }, '없음']
+          },
+
+          createdAt: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt"
+            }
+          }
+        }
+      },
+
+      // ✅ 불필요 제거
+      {
+        $project: {
+          memberCountArr: 0,
+          taskCountArr: 0,
+          owner: 0,
+          ownerInfo: 0
+        }
+      }
+
+    ]);
+
+    res.json({ teams });
+
+  } catch (err) {
+    console.error("🔥 teams 에러:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // 팀 삭제
@@ -52,11 +226,14 @@ router.delete('/teams/:teamId', auth, admin, async (req, res) => {
         
         await Team.findByIdAndDelete(req.params.teamId);
 
-        await TeamMember.deleteMany({ teamId });
+        await TeamMember.deleteMany({ 
+            teamId: new mongoose.Types.ObjectId(teamId) 
+        });
 
         res.json({ message: '팀 삭제 완료' });
 
     } catch (err) {
+        console.error("🔥 팀 삭제 에러:", err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -133,10 +310,39 @@ router.get('/activities', async (req, res) => {
       .find()
       .populate('teamId', 'name')
       .sort({ createdAt: -1 })
-      .limit(10);
+      .limit(5);
 
     res.json({ activities });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//search
+router.get('/search', auth, admin, async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q) return res.json({ users: [], teams: [], notices: [] });
+
+    const regex = new RegExp(q, 'i');
+
+    const users = await User.find({
+      $or: [{ name: regex }, { email: regex }]
+    }).select('-password');
+
+    const teams = await Team.find({
+      name: regex
+    });
+
+    const notices = await Notice.find({
+      title: regex
+    }).populate('createdBy', 'name');
+
+    res.json({ users, teams, notices });
+
+  } catch (err) {
+    console.error("🔥 search 에러:", err);
     res.status(500).json({ error: err.message });
   }
 });

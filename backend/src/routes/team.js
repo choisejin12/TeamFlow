@@ -154,6 +154,48 @@ router.get('/:teamId', auth, async (req, res) => {
     }
 });
 
+//owner가 팀삭제
+router.delete('/:teamId', auth, async (req, res) => {
+  try {
+    console.log("🔥🔥🔥진입")
+    const { teamId } = req.params;
+    const userId = req.user._id;
+
+    // teamId 형식 체크
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
+      return res.status(400).json({ message: '유효하지 않은 팀 ID입니다.' });
+    }
+
+    // 팀 존재 확인
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ message: '팀을 찾을 수 없습니다.' });
+    }
+
+    // 현재 유저가 해당 팀의 owner인지 확인
+    const teamMember = await TeamMember.findOne({
+      teamId,
+      userId,
+      role: 'OWNER',
+    });
+
+    if (!teamMember) {
+      return res.status(403).json({ message: '팀의 OWNER만 삭제할 수 있습니다.' });
+    }
+
+    // 관련 데이터 삭제
+    await TeamMember.deleteMany({ teamId });
+    await Task.deleteMany({ teamId }); // task 모델 사용 중일 때만
+    await Team.findByIdAndDelete(teamId);
+
+    return res.json({ message: '팀 삭제 완료' });
+
+  } catch (err) {
+    console.error('팀 삭제 오류:', err);
+    return res.status(500).json({ message: '서버 오류', error: err.message });
+  }
+});
+
 
 
 

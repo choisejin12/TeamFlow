@@ -16,6 +16,7 @@ import Dashboard from './pages/DashboardPage';
 import NavBar from './layout';
 import Home from './pages/HomePage';
 import DetailTeamPage from './pages/DetailTeamPage';
+import Calendar from './pages/Calendar';
 
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
             <Route path="/teams" element={<Team />} />
             <Route path="/teams/:teamId" element={<DetailTeamPage />} />
             <Route path="/invite/join" element={<Join />} />
+            <Route path="/calendar" element={<Calendar />} />
           </Route>
 
           {/* 관리자 */}

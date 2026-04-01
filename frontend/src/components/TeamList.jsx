@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 function TeamList({ teams }) {
   const navigate = useNavigate();
   return (
-    <>
+    <div>
             {/* 팀 리스트 */}
         <div className="space-y-3">
             {teams.length === 0 && (
-              <div className="bg-white rounded-2xl border border-[#BCCBB8] p-6 text-center text-gray-500">
+              <div className="bg-white rounded-2xl border border-[#BCCBB8] p-6 text-center text-gray-500 ">
                 아직 가입된 팀이 없습니다.
               </div>
             )}
@@ -15,7 +15,7 @@ function TeamList({ teams }) {
           <div className="md:hidden space-y-3">
             {teams.map((team) => (
               <div
-                key={team._id}
+                key={team.teamId}
                 className="bg-white px-4 py-4 rounded-2xl border border-[#BCCBB8]"
               >
                 {/* 상단 */}
@@ -53,7 +53,7 @@ function TeamList({ teams }) {
 
                 {/* 버튼 (이미지처럼 아래) */}
                 <button
-                  onClick={() => navigate(`/teams/${team._id}`)}
+                  onClick={(e) => {e.currentTarget.classList.add("scale-95"); setTimeout(()=>navigate(`/teams/${team?.teamId}`),100)}}
                   className="mt-3 w-full h-9 rounded-full border border-gray-300 px-4 text-sm bg-[#F8F8F8] hover:bg-[#819E7A] hover:text-white text-[#819E7A] font-semibold"
                 >
                   팀 들어가기 →
@@ -75,7 +75,7 @@ function TeamList({ teams }) {
           .filter((team) => team?.teamId)
           .map((team) => (
             <div
-              key={team._id}
+              key={team.teamId}
               className="flex items-center justify-between bg-white px-5 py-4 transition mb-0 first:rounded-t-2xl last:rounded-b-2xl border-t border-l border-r last:border-b border-[#BCCBB8]"
             >
               {/* 왼쪽 */}
@@ -107,7 +107,7 @@ function TeamList({ teams }) {
                 </span>
 
                 <button
-                  onClick={() => navigate(`/teams/${team?.teamId}`)}
+                  onClick={(e) => {e.currentTarget.classList.add("scale-95"); setTimeout(()=>navigate(`/teams/${team?.teamId}`),100)}}
                   className="shrink-0 w-72 h-10 rounded-full border border-gray-300 px-4 py-1 text-sm bg-[#F8F8F8] hover:bg-[#819E7A] hover:text-white text-[#819E7A] font-semibold"
                 >
                   팀 들어가기 →
@@ -116,7 +116,7 @@ function TeamList({ teams }) {
             </div>
           ))}
         </div>
-    </>
+    </div>
   );
 }
 

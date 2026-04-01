@@ -1,10 +1,7 @@
 import './App.css'
-import { Outlet, Routes, Route } from 'react-router-dom';
-import { useEffect } from 'react'
+import { Routes, Route } from 'react-router-dom';
 import Login from './pages/LoginPage';
-import Register from './pages/RagisterPage';
-import { useDispatch } from 'react-redux'
-import {authUser} from './store/thunkFunctions';
+import Register from './pages/RegisterPage';
 import ProtectedRoute from './components/ProtectedRoutes';
 import NotAuthRoute from './components/NotAuthRoutes';
 import AdminRoute from './components/AdminRoutes';
@@ -18,22 +15,20 @@ import Home from './pages/HomePage';
 import DetailTeamPage from './pages/DetailTeamPage';
 import Calendar from './pages/Calendar';
 
-
 function App() {
-  const dispatch = useDispatch();
+  /*const dispatch = useDispatch();
   
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (token) {
       dispatch(authUser());
     }
-  }, []);
-
+  }, []);*/
 
 
   return (
     <>
-      <ToastContainer position='bottom-right' thema='light' pauseOnHover autoClose={2000}/>
+      <ToastContainer position='bottom-right' theme='light' pauseOnHover autoClose={2000}/>
       <Routes>
         {/* 홈 (Navbar 없음) */}
         <Route path='/' element={<Home />} />

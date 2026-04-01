@@ -1,42 +1,46 @@
 // src/pages/Login.jsx
 import { useDispatch } from 'react-redux';
-import { loginUser } from '../../store/thunkFunctions';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
+import { setUser } from '../../store/userSlice'; 
+import { useLogin } from '../../features/auth/useLogin';
+
+
 
 function Login() {
-  // 전체 흐름 
-  // 입력 → register로 추적 → 검증 → handleSubmit → onSubmit 실행
+  type FormValues = {
+    email: string;
+    password: string;
+  };
+
   const navigate = useNavigate();
+
     const {
       register, // input을 react-hook-form에 등록
       handleSubmit, // 검증 → 성공 시 onSubmit 실행
       formState: { errors }, // 검증 실패 시 에러 정보 저장
       reset // 리셋 함수
-    } = useForm({ mode: 'onChange'}) // 입력 값이 바뀔 때 마다 실행
+    } = useForm<FormValues>({ mode: 'onChange' }) // 입력 값이 바뀔 때 마다 실행
 
     const dispatch = useDispatch();
+  const { mutate } = useLogin();
 
+  const onSubmit = ({ email, password }: FormValues) => {
+    const body = { email, password };
 
-  const onSubmit = ({ email,password}) => { // 검증 성공 후 실행
-    // email,password 👉 register된 input 값들을 자동으로 모아서 줌
-    const body = {
-      email,
-      password,
-    }
-
-    dispatch(loginUser(body)) // Redux thunk 실행
-      .unwrap()
-      .then(() => {
+    mutate(body, {
+      onSuccess: (user) => {
+        dispatch(setUser(user)); 
         navigate('/dashboard');
-      })
-      .catch((err) => {
-        toast.error(err);
-      })
+        reset();
+      },
+      onError: (err: any) => {
+        toast.error(err?.message || "로그인 실패");
+      },
+    });
+  };
 
-    reset();
-    }
 
   const userEmail = {
     required : "필수 필드입니다.",

@@ -4,9 +4,13 @@ import { BrowserRouter } from 'react-router-dom' // 👈 추가
 import { Provider} from 'react-redux'
 import { store } from './store'
 import './index.css'
-import App from './App.jsx'
+import App from './App.tsx'
 import { PersistGate } from 'redux-persist/integration/react'
 import {persistor} from './store'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -18,7 +22,10 @@ createRoot(document.getElementById('root')).render(
           persistor 👉 저장/복구 담당 (실제 작업)
           PersistGate 👉 끝날 때까지 기다림 (UI 제어)
           */}
-          <App />
+          <QueryClientProvider client={queryClient}>
+            <App />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </QueryClientProvider>
         </PersistGate>
 
       </Provider>

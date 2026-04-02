@@ -9,7 +9,7 @@ import { MdAccessTime } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 
 import { ActivityType } from '../../types/activity';
-
+import { useAppSelector } from '../../store/hook';
 import { useTeams, useCreateTeam } from '../../hooks/useTeam';
 import { useNotice } from '../../hooks/useNotice';
 import { useStats } from '../../hooks/useTask';
@@ -26,6 +26,8 @@ const TeamPage = () => {
   const { data: notice = [] } = useNotice();
   const { data: stats = { total: 0, done: 0, progress: 0, todo: 0 } } = useStats();
   const { data: activities = [] } = useActivities();
+
+  const { userData } = useAppSelector(state => state.user);
 
   const createTeamMutation = useCreateTeam({
     onSuccess: () => {
@@ -205,7 +207,7 @@ const TeamPage = () => {
         {/* 할일 */}          
         <div className="rounded-xl bg-gray-50 p-4 md:p-5 md:w-200 mb-3 md:mb-0 fade-in hover-scale hover-shadow">
           <h3 className="mb-3 text-base md:text-lg font-light">
-            세진님의 할일 통계
+            {userData?.name}님의 할일 통계
           </h3>
           {/* 총 개수 */}
           <div className="text-lg md:text-2xl font-bold">

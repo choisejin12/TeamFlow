@@ -9,6 +9,7 @@ import TeamCreateModal  from '../../components/TeamCreateModal';
 import TeamList from '../../components/TeamList';
 import {toast} from 'react-toastify';
 
+import { useAppSelector } from '../../store/hook';
 import { useTeams, useCreateTeam } from '../../hooks/useTeam';
 import { useNotice } from '../../hooks/useNotice';
 import { useStats, useMyTasks } from '../../hooks/useTask';
@@ -24,6 +25,8 @@ function Dashboard() {
   const { data: notice = [], isLoading: noticeLoading } = useNotice();
   const { data: stats, isLoading: statsLoading } = useStats();
   const { data: task = [], isLoading: taskLoading } = useMyTasks();
+
+  const { userData } = useAppSelector(state => state.user);
 
   const createTeamMutation = useCreateTeam({
     onSuccess: () => {
@@ -154,7 +157,7 @@ function Dashboard() {
         {/* 🔥 통계 */}
         <div className="rounded-xl bg-gray-50 p-4 md:p-5 mb-5 md:mb-0 fade-in hover-scale hover-shadow">
           <h3 className="mb-3 text-base md:text-lg font-bold">
-            세진님의 할일 통계
+            {userData?.name}님의 할일 통계
           </h3>
 
           {statsLoading || !stats ? (

@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+
+import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/userSlice';
 import { FaHome } from "react-icons/fa";
 import { FaCalendarCheck } from "react-icons/fa";
@@ -17,14 +18,20 @@ const menus = [
     { name: 'Setting', path: '/admin' ,icon: <IoSettingsSharp size={40}/>  },
 ];
 
-function NavItems({ className = "", onClose }) {
-  const { userData } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
+type Props = {
+  className?: string;
+  onClose?: () => void;
+};
+
+
+function NavItems({ className = "", onClose }: Props) {
+  const { userData } = useAppSelector(state => state.user);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/');
+    navigate('/login');
   };
 
   return (

@@ -2,54 +2,17 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { useEffect, useState } from 'react';
-import axios from '../../utils/axios';
 import koLocale from '@fullcalendar/core/locales/ko';
+import { useCalendarTasks } from '../../hooks/useCalendarTasks';
 
 function CalendarPage() {
-  const [events, setEvents] = useState([]);
+  const { data: events = [], isLoading, isError } = useCalendarTasks();
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  const fetchTasks = async () => {
-    try {
-      const res = await axios.get('/tasks/calendar'); 
-      const eventsData = res.data.tasks.map((task) => {
-        const endDate = new Date(task.dueDate);
-        endDate.setDate(endDate.getDate());
-
-        return {
-          id: task._id,
-          title: task.title,
-          start: task.createdAt,
-          end: endDate,
-
-          // 상태별 색상 (선택)
-          backgroundColor:
-            task.status === 'DONE'
-              ? '#9CA3AF'
-              : task.status === 'IN_PROGRESS'
-              ? '#4CAF50'
-              : '#819E7A',
-
-          borderColor:
-            task.status === 'DONE'
-              ? '#9CA3AF'
-              : task.status === 'IN_PROGRESS'
-              ? '#4CAF50'
-              : '#819E7A',
-        };
-      });
-      setEvents(eventsData);
-    } catch (err) {
-      console.error('캘린더 데이터 불러오기 실패:', err);
-    }
-  };
-
-
+  if (isLoading) return <div>로딩중...</div>;
+  if (isError) return <div>에러 발생</div>;
+  
   return (
+    
     <div className="w-full min-h-screen bg-[#f8faf7] px-4 py-4 md:px-8 md:py-8">
       
       {/* 제목 */}

@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import axios from '../../utils/axios';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MyCalendar from '../../components/Calendar';
 import { FaCheckCircle } from "react-icons/fa";
@@ -7,80 +6,34 @@ import { FaRegCheckCircle } from "react-icons/fa";
 import { MdAccessTime } from "react-icons/md";
 import NoticeSlider from '../../components/NoticeSlider';
 import TeamCreateModal  from '../../components/TeamCreateModal';
-import { toast } from 'react-toastify';
 import TeamList from '../../components/TeamList';
+import {toast} from 'react-toastify';
+
+import { useTeams, useCreateTeam } from '../../hooks/useTeam';
+import { useNotice } from '../../hooks/useNotice';
+import { useStats, useMyTasks } from '../../hooks/useTask';
 
 function Dashboard() {
   const navigate = useNavigate();
 
-  const [teams, setTeams] = useState([]);
-  const [notice, setNotice] = useState([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    done: 0,
-    progress: 0,
-    todo: 0,
+  const [open, setOpen] = useState<boolean>(false);
+  const [showTeamList, setShowTeamList] = useState<boolean>(true);
+
+  // ✅ React Query
+  const { data: teams = [], isLoading: teamLoading } = useTeams();
+  const { data: notice = [], isLoading: noticeLoading } = useNotice();
+  const { data: stats, isLoading: statsLoading } = useStats();
+  const { data: task = [], isLoading: taskLoading } = useMyTasks();
+
+  const createTeamMutation = useCreateTeam({
+    onSuccess: () => {
+      toast.success('팀 생성 완료 🎉');
+      setOpen(false); 
+    },
+    onError: () => {
+      toast.error('팀 생성 실패 ❌');
+    }
   });
-  const [task,setMyTasks] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [showTeamList, setShowTeamList] = useState(true);
-
-
-  const handleCreate = async (data) => {
-      try{
-        await axios.post('/teams', data)
-        toast.success('팀 생성 완료 🎉');
-        await fetchTeams();
-        setOpen(false);
-      }catch(err){
-        console.error(err);
-        toast.error('팀 생성 실패 ❌');
-      }
-  };
-
-  // 🔥 데이터 가져오기
-  useEffect(() => {
-    fetchTeams();
-    fetchNotice();
-    fetchStats();
-    fetchMyTasks();
-  }, []);
-
-  const fetchTeams = async () => {
-    try {
-      const res = await axios.get('/teams');
-      setTeams(res.data.teams);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const fetchNotice = async () => {
-    try {
-      const res = await axios.get('/admin/notices');
-      setNotice(res.data.notices); 
-    } catch (err) {
-      console.log("에러:", err)
-    }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const res = await axios.get('/tasks/stats');
-      setStats(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const fetchMyTasks = async () => {
-  try {
-    const res = await axios.get('/tasks/mytasks');
-    setMyTasks(res.data.tasks);
-  } catch (err) {
-    console.error(err);
-  }
-  };
 
   return (
     <div className="space-y-4 md:space-y-6 px-4 sm:px-6 md:px-0 max-w-md mx-auto md:max-w-full">
@@ -89,7 +42,11 @@ function Dashboard() {
         <span className="shrink-0">📢</span>
         <span className="font-medium text-[#D94100] shrink-0 whitespace-nowrap">금주의 공지사항</span>
         <div className='flex-1 min-w-0 truncate'>
-          <NoticeSlider notice={notice} />
+          {noticeLoading ? (
+            <span className="text-gray-400">공지 불러오는 중...</span>
+          ) : (
+            <NoticeSlider notice={notice} />
+          )}
         </div>
       </div>
 
@@ -120,16 +77,21 @@ function Dashboard() {
             >
             {showTeamList ? '접기 ▲' : '펼치기 ▼'}
             </button>
-
-            <TeamCreateModal
-            isOpen={open}
-            onClose={() => setOpen(false)}
-            onCreate={handleCreate}
-            />
-          </div>
         </div>
-        {showTeamList &&(<TeamList teams={teams} />)}
-      </div>      
+        </div>
+        {/* 팀 리스트 */}
+        {teamLoading ? (
+          <div className="text-center text-gray-400 py-5">팀 불러오는 중...</div>
+        ) : (
+          showTeamList && <TeamList teams={teams} />
+        )}
+      </div>
+
+      <TeamCreateModal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        onCreate={(data) => createTeamMutation.mutate(data)}
+      />      
 
         {/* 🔥 캘린더 + 할일 */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 ">
@@ -142,11 +104,11 @@ function Dashboard() {
           {/* 오늘 할일 */}
           <div className="space-y-2 rounded-xl bg-gray-50 p-7 fade-in hover-scale hover-shadow">
             {
-              task.length === 0 ? (
-                  <div className="text-center text-gray-400 py-10">
-                    할 일이 없습니다.
-                  </div>
-                ) : 
+              taskLoading ? (
+                  <div className="text-center text-gray-400 py-10">로딩 중...</div>
+                ) : task.length === 0 ? (
+                  <div className="text-center text-gray-400 py-10">할 일이 없습니다.</div>
+              ) : 
               (task.map((task) => {
                 const date = new Date(task.dueDate);
                 const day = date.toLocaleDateString('ko-KR', {
@@ -195,8 +157,10 @@ function Dashboard() {
             세진님의 할일 통계
           </h3>
 
-          <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:gap-6 text-sm">
-            
+          {statsLoading || !stats ? (
+          <div className="text-gray-400">통계 불러오는 중...</div>
+          ) : 
+          (<div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:gap-6 text-sm">
             {/* 총 개수 */}
             <div className="text-lg md:text-2xl font-bold">
               총 {stats.total}개
@@ -221,6 +185,7 @@ function Dashboard() {
             </div>
 
           </div>
+        )}
         </div>
     </div>
   );

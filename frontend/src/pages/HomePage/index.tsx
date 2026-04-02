@@ -1,10 +1,10 @@
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FaCheckSquare, FaUsers, FaCalendarAlt } from "react-icons/fa";
+import { useAppSelector } from "../../store/hook";
 
 function Home() {
   const navigate = useNavigate();
-  const isAuth = useSelector((state) => state.user?.isAuth); 
+  const isAuth = useAppSelector((state) => state.user.isAuth);
 
   return (
     <div className="min-h-screen bg-[#BCCBB8] flex items-center justify-center px-4 py-10">

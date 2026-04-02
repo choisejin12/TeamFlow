@@ -1,35 +1,35 @@
 import { useState } from 'react';
 import axios from '../utils/axios';
 import { toast } from 'react-toastify';
+import { useCreateNotice } from '../hooks/useAdmin';
 
-const NoticeCreate = ({ onSuccess }) => {
+type Props = {
+  onSuccess?: () => void; // 기존 구조 유지 (안써도 됨)
+};
+
+const NoticeCreate = () => {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
 
-  const handleSubmit = async () => {
+  const createNotice = useCreateNotice();
+
+
+  const handleSubmit = () => {
     if (!title.trim()) {
       toast.error('내용을 입력하세요');
       return;
     }
-    try {
-      const res = await axios.post('/admin/notices', 
-        { title },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
 
-      toast.success('공지 생성 완료');
-      setTitle('');
-      setShowForm(false);
-
-      onSuccess(); // 목록 다시 불러오기
-
-    } catch (err) {
-      toast.error(err.response?.data?.message);
-    }
+    createNotice.mutate(title, {
+      onSuccess: () => {
+        toast.success('공지 생성 완료');
+        setTitle('');
+        setShowForm(false);
+      },
+      onError: () => {
+        toast.error('공지 생성 실패');
+      },
+    });
   };
 
   return (

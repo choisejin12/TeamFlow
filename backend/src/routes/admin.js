@@ -88,7 +88,7 @@ router.get('/users', auth, admin, async (req, res) => {
     res.json({ users });
 
   } catch (err) {
-    console.error("🔥 에러:", err);  // 이거 추가
+    console.error(" 에러:", err);  // 이거 추가
     res.status(500).json({ error: err.message });
   }
 });
@@ -214,7 +214,7 @@ router.get('/teams', auth, admin, async (req, res) => {
     res.json({ teams });
 
   } catch (err) {
-    console.error("🔥 teams 에러:", err);
+    console.error(" teams 에러:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -233,7 +233,7 @@ router.delete('/teams/:teamId', auth, admin, async (req, res) => {
         res.json({ message: '팀 삭제 완료' });
 
     } catch (err) {
-        console.error("🔥 팀 삭제 에러:", err);
+        console.error("팀 삭제 에러:", err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -280,7 +280,7 @@ router.get('/notices', auth, async (req, res) => {
         res.json({ notices });
 
     } catch (err) {
-        console.error("🔥 notices 에러:", err);
+        console.error(" notices 에러:", err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -327,14 +327,89 @@ router.get('/search', auth, admin, async (req, res) => {
 
     const regex = new RegExp(q, 'i');
 
-    const users = await User.find({
-      $or: [{ name: regex }, { email: regex }]
-    }).select('-password');
+    // ✅ users (taskCount, teamCount 포함)
+    const users = await User.aggregate([
+      {
+        $match: {
+          $or: [{ name: regex }, { email: regex }]
+        }
+      },
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: '_id',
+          foreignField: 'assigneeId',
+          as: 'tasks'
+        }
+      },
+      {
+        $lookup: {
+          from: 'teammembers',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'teams'
+        }
+      },
+      {
+        $addFields: {
+          taskCount: { $size: '$tasks' },
+          teamCount: { $size: '$teams' }
+        }
+      },
+      {
+        $project: {
+          password: 0,
+          tasks: 0,
+          teams: 0
+        }
+      },
+      {
+        $addFields: {
+          createdAt: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt"
+            }
+          }
+        }
+      },
+      
+    ]);
 
-    const teams = await Team.find({
-      name: regex
-    });
+    // ✅ teams
+    const teams = await Team.aggregate([
+      { $match: { name: regex } },
+      {
+        $lookup: {
+          from: 'teammembers',
+          localField: '_id',
+          foreignField: 'teamId',
+          as: 'members'
+        }
+      },
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: '_id',
+          foreignField: 'teamId',
+          as: 'tasks'
+        }
+      },
+      {
+        $addFields: {
+          memberCount: { $size: '$members' },
+          taskCount: { $size: '$tasks' }
+        }
+      },
+      {
+        $project: {
+          members: 0,
+          tasks: 0
+        }
+      }
+    ]);
 
+    // ✅ notices (이건 이미 ok)
     const notices = await Notice.find({
       title: regex
     }).populate('createdBy', 'name');
@@ -342,7 +417,7 @@ router.get('/search', auth, admin, async (req, res) => {
     res.json({ users, teams, notices });
 
   } catch (err) {
-    console.error("🔥 search 에러:", err);
+    console.error("search 에러:", err);
     res.status(500).json({ error: err.message });
   }
 });

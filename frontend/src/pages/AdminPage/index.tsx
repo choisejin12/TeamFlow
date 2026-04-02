@@ -1,19 +1,44 @@
-import React from 'react'
 import { IoSearch } from "react-icons/io5";
 import { useEffect, useState } from 'react';
-import axios from '../../utils/axios';
 import DataTable from '../../components/DataTable';
 import NoticeCreate from '../../components/NoticeCreate';
 import { toast } from 'react-toastify';
+import {
+  useAdminData,
+  useDeleteUser,
+  useDeleteTeam,
+  useDeleteNotice,
+} from '../../hooks/useAdmin';
+import { Notice, User, Team } from "../../types/admin";
+import { Column } from "../../types/common"
+
 
 const AdminPage = () => {
 
-  const [users,setUser] = useState([]);
-  const [teams,setTeam] = useState([]);
-  const [notices,setNotice] = useState([]);
   const [keyword, setKeyword] = useState('');
+  const [debouncedKeyword, setDebouncedKeyword] = useState(keyword);
 
-  const userColumns = [
+  const { data, isLoading } = useAdminData(debouncedKeyword);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedKeyword(keyword);
+    }, 500); // 0.5초 후 실행
+
+    return () => clearTimeout(timer);
+  }, [keyword]);
+
+  const deleteUser = useDeleteUser();
+  const deleteTeam = useDeleteTeam();
+  const deleteNotice = useDeleteNotice();
+
+  if (isLoading) return <div>로딩중...</div>;
+
+  const users = data?.users || [];
+  const teams = data?.teams || [];
+  const notices = data?.notices || [];
+
+  const userColumns: Column<User>[] = [
     { label: '이름', key: 'name' },
     { label: '이메일', key: 'email' },
     { 
@@ -30,7 +55,7 @@ const AdminPage = () => {
     { label: '할일(갯수)', key: 'taskCount' },
   ];
 
-  const teamColums = [
+  const teamColums: Column<Team>[]  = [
     { label : '이름', key: 'name'},
     { label : '설명', key: 'description'},
     { label : '팀장', key: 'ownerName'},
@@ -39,17 +64,17 @@ const AdminPage = () => {
     { label : '할일(갯수)', key: 'taskCount'},
   ]
 
-  const noticeColums = [
+  const noticeColums: Column<Notice, any>[] = [
     {
       label: '작성자',
       key: 'createdBy',
-      render: (value) => value?.name || '없음'
+      render: (value: Notice['createdBy']) => value?.name || '없음'
     },
     { label : '제목', key: 'title'},
     { 
       label: '생성일', 
       key: 'createdAt',
-      render: (value) => {
+      render: (value: Notice['createdAt']) => {
         const date = new Date(value);
         const y = date.getFullYear();
         const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -58,124 +83,34 @@ const AdminPage = () => {
       }
     },
   ]
-  // 🔵 기존 전체 데이터 불러오기
-  const fetchAll = async () => {
-    const [u, t, n] = await Promise.all([
-      axios.get('/admin/users'),
-      axios.get('/admin/teams'),
-      axios.get('/admin/notices')
-    ]);
-
-    setUser(u.data.users);
-    setTeam(t.data.teams);
-    setNotice(n.data.notices);
-  };
 
 
-  // 🔵 검색
-  const handleSearch = async () => {
-    try {
-      const res = await axios.get(`/admin/search?q=${keyword}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      setUser(res.data.users);
-      setTeam(res.data.teams);
-      setNotice(res.data.notices);
-
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-
-  useEffect(() => {
-  // 🔴 검색어 없으면 전체 데이터
-    if (!keyword.trim()) {
-      fetchAll();
-      return;
-    }
-
-    const delay = setTimeout(() => {
-      handleSearch();
-    }, 300); // 0.3초 딜레이
-
-    return () => clearTimeout(delay);
-
-  }, [keyword]);
-
-  useEffect(() => {
-    fetchAll();
-  },[])
-
-  const fetchUsers = async () => {
-    try{
-      const res = await axios.get('/admin/users');
-      setUser(res.data?.users)
-    }catch(err){
-      console.log(err)
-    }
-  }
-
-  const fetchTeams = async () => {
-    try{
-      const res = await axios.get('/admin/teams');
-      setTeam(res.data?.teams)
-    }catch(err){
-      console.log(err)
-    }
-  }
-
-  const fetchNotices = async () => {
-    try{
-      const res = await axios.get('/admin/notices');
-      setNotice(res.data?.notices)
-    }catch(err){
-      console.log(err)
-    }
-  }
-
-  const deleteUser = async (userId) => {
+  const handleDeleteUser = (id: string) => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
-    try {
-      const res=await axios.delete(`/admin/users/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      toast.success(res?.data?.message || '유저 삭제 완료');
-      await fetchUsers(); // 목록 다시 불러오기
-
-    } catch (err) {
-      toast.error(err.response?.data?.message || '삭제 실패');
-    }
+    deleteUser.mutate(id, {
+      onSuccess: () => toast.success('유저 삭제 완료'),
+      onError: () => toast.error('삭제 실패'),
+    });
   };
 
-  const deleteTeam = async (teamId) => {
+
+  const handleDeleteTeam = (id: string) => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
-    try {
-      const res=await axios.delete(`/admin/teams/${teamId}`)
-
-      toast.success(res?.data?.message || '팀 삭제 완료');
-      await fetchTeams(); // await 추가 (안정성)
-    } catch (err) {
-      toast.error(err.response?.data?.message || '삭제 실패');
-    }
+    deleteTeam.mutate(id, {
+      onSuccess: () => toast.success('팀 삭제 완료'),
+      onError: () => toast.error('삭제 실패'),
+    });
   };
 
-  const deleteNotice = async (noticeId) => {
+
+  const handleDeleteNotice = (id: string) => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
-    try {
-      const res=await axios.delete(`/admin/notices/${noticeId}`)
-
-      toast.success(res?.data?.message || '공지 삭제 완료');
-      await fetchNotices(); // await 추가 (안정성)
-    } catch (err) {
-      toast.error(err.response?.data?.message || '삭제 실패');
-    }
+    deleteNotice.mutate(id, {
+      onSuccess: () => toast.success('공지 삭제 완료'),
+      onError: () => toast.error('삭제 실패'),
+    });
   };
+
   return (
     <div className="space-y-4 md:space-y-6 px-4 sm:px-6 md:px-0 max-w-md mx-auto md:max-w-full">
       {/* 헤더 */}
@@ -207,7 +142,7 @@ const AdminPage = () => {
           data={users}
           renderAction={(item) => (
             <button 
-              onClick={() => deleteUser(item._id)}
+              onClick={() => handleDeleteUser(item._id)}
               className="text-orange-500 hover:text-red-600 cursor-pointer"
             >
               X
@@ -227,7 +162,7 @@ const AdminPage = () => {
           data={teams}
           renderAction={(item) => (
             <button 
-              onClick={() => deleteTeam(item._id)}
+              onClick={() => handleDeleteTeam(item._id)}
               className="text-orange-500 hover:text-red-600 cursor-pointer"
             >
               X
@@ -243,14 +178,14 @@ const AdminPage = () => {
           <div className="text-3xl font-bold mb-5 mr-3">
             Notices
           </div>
-          <NoticeCreate onSuccess={fetchNotices} />
+          <NoticeCreate />
         </div>
         <DataTable 
           columns={noticeColums}
           data={notices}
           renderAction={(item) => (
             <button 
-              onClick={() => deleteNotice(item._id)}
+              onClick={() => handleDeleteNotice(item._id)}
               className="text-orange-500 hover:text-red-600 cursor-pointer"
             >
               X

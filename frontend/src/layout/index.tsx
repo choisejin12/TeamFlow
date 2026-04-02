@@ -4,7 +4,7 @@ import NavItems from './Sections/NavItem';
 import { GiHamburgerMenu } from "react-icons/gi";
 
 function Layout() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
 
   return (
     <div className="min-h-screen bg-[#dfe8d8] p-4 md:p-6">

@@ -1,7 +1,5 @@
-import React from 'react'
-import axios from '../../utils/axios';
 import NoticeSlider from '../../components/NoticeSlider';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import TeamCreateModal  from '../../components/TeamCreateModal';
 import { toast } from 'react-toastify';
 import TeamList from '../../components/TeamList';
@@ -10,122 +8,57 @@ import { FaRegCheckCircle } from "react-icons/fa";
 import { MdAccessTime } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 
+import { ActivityType } from '../../types/activity';
+
+import { useTeams, useCreateTeam } from '../../hooks/useTeam';
+import { useNotice } from '../../hooks/useNotice';
+import { useStats } from '../../hooks/useTask';
+import { useActivities } from '../../hooks/useActivity';
+
 const TeamPage = () => {
   const navigate = useNavigate();
 
-  const [notice, setNotice] = useState([]);  
-  const [teams, setTeams] = useState([]);
-  const [ownerlengt, setOwner] = useState();
-  const [memberlengt, setMember] = useState();
   const [open, setOpen] = useState(false);
-  const [filter, setFilter] = useState('ALL');
-  const [stats, setStats] = useState({
-    total: 0,
-    done: 0,
-    progress: 0,
-    todo: 0,
-  });  
-  const [activities,setActivities] = useState([]);
+  const [filter, setFilter] = useState<'ALL' | 'OWNER' | 'MEMBER'>('ALL');
+
+  // ✅ React Query
+  const { data: teams = [] } = useTeams();
+  const { data: notice = [] } = useNotice();
+  const { data: stats = { total: 0, done: 0, progress: 0, todo: 0 } } = useStats();
+  const { data: activities = [] } = useActivities();
+
+  const createTeamMutation = useCreateTeam({
+    onSuccess: () => {
+      toast.success('팀 생성 완료 🎉');
+      setOpen(false);
+    },
+    onError: () => {
+      toast.error('팀 생성 실패 ❌');
+    }
+  });
 
   const filteredTeams = teams.filter((team) => {
     if (filter === 'ALL') return true;
     return team.role === filter;
   });
 
-  const handleCreate = async (data) => {
-      try{
-        await axios.post('/teams', data)
-        toast.success('팀 생성 완료 🎉');
-        await fetchTeams();
-        setOpen(false);
-      }catch(err){
-        console.error(err);
-        toast.error('팀 생성 실패 ❌');
-      }
-  };
 
-  const getIcon = (type) => {
-  switch(type) {
-    case 'TEAM_CREATE':
-      return '🟢';
-    case 'MEMBER_ADD':
-      return '👤';
-    case 'TASK_COMPLETE':
-      return '✔️';
-    case 'NOTICE_CREATE':
-      return '📢';
-    default:
-      return '📌';
-  }
-  };
-
-  useEffect(() => {
-    fetchTeams();
-    fetchNotice();
-    fetchStats();
-    
-  }, []);
-
-  useEffect(() => {
-    getRolenum();
-  }, [teams]);
-
-  useEffect(() => {
-    fetchActivities();
-  }, [activities]);
-
-
-
-  const fetchActivities = async () => {
-    const res = await axios.get('/admin/activities');
-    setActivities(res.data.activities);
-  };
-
-  const fetchStats = async () => {
-    try {
-      const res = await axios.get('/tasks/stats');
-      setStats(res.data);
-    } catch (err) {
-      console.error(err);
+  const getIcon = (type: ActivityType): string => {
+    switch (type) {
+      case 'TEAM_CREATE':
+        return '🟢';
+      case 'MEMBER_ADD':
+        return '👤';
+      case 'NOTICE_CREATE':
+        return '📢';
+      default:
+        return '📌';
     }
   };
 
-  const fetchNotice = async () => {
-    try {
-      const res = await axios.get('/admin/notices');
-      setNotice(res.data.notices); 
-    } catch (err) {
-      console.log("에러:", err)
-    }
-  };
+  const ownerlengt = teams.filter(t => t.role === 'OWNER').length;
+  const memberlengt = teams.filter(t => t.role === 'MEMBER').length;
 
-  const fetchTeams = async () => {
-    try {
-      const res = await axios.get('/teams');
-      setTeams(res.data.teams);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const getRolenum = async () => {
-    try{
-      let OwnerNum = 0;
-      let MemberNum = 0;
-      teams.map((team) => {
-        if(team.role == "OWNER" ){
-          OwnerNum+=1;
-        }
-        else if (team.role == "MEMBER"){
-          MemberNum+=1;
-        }
-      })
-      setOwner(OwnerNum);
-      setMember(MemberNum);
-    }catch(err){
-      console.error(err);
-    }
-  }
 
   return (
     <div className='space-y-4 md:space-y-6 px-4 sm:px-6 md:px-0 max-w-md mx-auto md:max-w-full'>
@@ -183,18 +116,16 @@ const TeamPage = () => {
             >
               초대코드 입력
             </button>
-          </div>
-
-          <TeamCreateModal
-            isOpen={open}
-            onClose={() => setOpen(false)}
-            onCreate={handleCreate}
-          />   
+          </div>   
 
         </div>
       </div>
       {/* END */}
-
+      <TeamCreateModal
+        isOpen={open}
+         onClose={() => setOpen(false)}
+        onCreate={(data) => createTeamMutation.mutate(data)}
+      />
 
       {/* 팀 목록 부분 */}
       <div className="rounded-2xl bg-[#F8F8F8] p-6 fade-in hover-scale hover-shadow">

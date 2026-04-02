@@ -25,7 +25,7 @@ router.get('/', auth, async (req, res) => {
         }));
         res.json({ teams });
     } catch (err) {
-        console.error('🔥 ERROR:', err);
+        console.error(' ERROR:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -66,7 +66,7 @@ router.post('/', auth, async (req, res) => {
             team
         });
     } catch (err) {
-        console.error('🔥 ERROR:', err);
+        console.error(' ERROR:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -75,7 +75,7 @@ router.post('/', auth, async (req, res) => {
 
 
 
-// 🔥 팀 상세 조회
+//  팀 상세 조회
 router.get('/:teamId', auth, async (req, res) => {
     try {
         const { teamId } = req.params;
@@ -110,13 +110,13 @@ router.get('/:teamId', auth, async (req, res) => {
             role: m.role
         }));
 
-        // 🔥 4. 내 할일
+        //  4. 내 할일
         const myTasks = await Task.find({
             teamId,
             assigneeId: req.user._id
         });
 
-        // 🔥 5. 팀 할일
+        //  5. 팀 할일
         const teamTasks = await Task.find({
             teamId,
             assigneeId: { $ne: req.user._id } 
@@ -149,7 +149,7 @@ router.get('/:teamId', auth, async (req, res) => {
         });
 
     } catch (err) {
-        console.error('🔥 ERROR:', err);
+        console.error(' ERROR:', err);
         res.status(500).json({ error: err.message });
     }
 });

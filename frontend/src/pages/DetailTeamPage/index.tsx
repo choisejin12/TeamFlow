@@ -1,8 +1,6 @@
-import React from 'react'
 import { useParams } from 'react-router-dom'
-import { useEffect, useState } from 'react';
+import {  useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../../utils/axios';
 import { IoSettingsSharp } from "react-icons/io5";
 import { FaUserAstronaut } from "react-icons/fa6";
 import { FaPlus } from "react-icons/fa";
@@ -10,14 +8,20 @@ import { MdOutlineCalendarToday } from "react-icons/md";
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
+import { useDetailTeam } from '../../hooks/detailTeam';
+import { useCreateTask, useUpdateTask, useDeleteTask } from '../../hooks/useTask';
+import { useDeleteTeam } from '../../hooks/useTeam';
+import { useInviteCode } from '../../hooks/useInvite';
+
+import { RootState } from '../../store';
+import { TaskStatus } from '../../types/task';
+
 const DetailTeamPage = () => {
   const navigate = useNavigate();
 
-  const { teamId } = useParams();
-  const [data,setdata] = useState();
-  const member = data?.members || [];
-  const [mytasks, setMyTasks] = useState([]);
-  const teamtasks = data?.teamTasks || [];
+  const { teamId } = useParams<{ teamId: string }>();
+  if (!teamId) return null;
+
   const [showInput, setShowInput] = useState(false);
   const [newTask, setNewTask] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -27,26 +31,23 @@ const DetailTeamPage = () => {
   const [editStatus, setEditStatus] = useState("");
   const [showSet, setShowSet] = useState(false);
 
-  const userData = useSelector(state => state.user?.userData);
+  
+  const { data, refetch } = useDetailTeam(teamId!);
+
+  const member = data?.members || [];
+  const mytasks = data?.myTasks || [];
+  const teamtasks = data?.teamTasks || [];
 
 
-  useEffect(() => {
-    fetchTeams();
-  }, []);
+  const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
+  const deleteTaskMutation = useDeleteTask();
+  const deleteTeamMutation = useDeleteTeam();
+  const inviteMutation = useInviteCode();
+    
+  const userData = useSelector((state: RootState) => state.user?.userData);
 
-
-  const fetchTeams = async () => {
-    try {
-      const res = await axios.get(`/teams/${teamId}`);
-      setdata(res.data);
-      setMyTasks(res.data?.myTasks)
-
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const getColor = (status) => {
+  const getColor = (status: string): string => {
     switch (status) {
       case "TODO":
         return "bg-green-500";
@@ -59,108 +60,92 @@ const DetailTeamPage = () => {
     }
   }; 
 
-  const TeamDelete = async () => {
-    try{
-      console.log("🔥🔥🔥진입")
-      const res = await axios.delete(`/teams/${teamId}`)
-      toast.success(res.data.message)
-      navigate('/teams')
-    }catch(err){
-      toast.error(err.response?.data?.message)
-    }
-  }
 
-  const handleEditStart = (task) => {
+  const TeamDelete = () => {
+    deleteTeamMutation.mutate(teamId!, {
+      onSuccess: (data) => {
+        toast.success(data.message);
+        navigate('/teams');
+      },
+      onError: (err: any) => {
+        toast.error(err.response?.data?.message);
+      }
+    });
+  };
+
+  const handleEditStart = (task: any) => {
     setEditTaskId(task.taskId);
     setEditTitle(task.title);
     setEditDate(task.dueDate?.split("T")[0] || "");
     setEditStatus(task.status);
   };
   
-  const handleEditSave = async () => {
-    try {
-      await axios.patch(`/tasks/${editTaskId}`, {
+  const handleEditSave = () => {
+    updateTaskMutation.mutate({
+      taskId: editTaskId,
+      data: {
         title: editTitle,
         dueDate: editDate,
         status: editStatus
-      });
-      setEditTaskId(null);
-      fetchTeams(); 
-    } catch (err) {
-      console.error(err);
-    }
+      }
+    });
+
+    setEditTaskId(null);
   };
 
-  const handleDelete = async (taskId) => {
-    const confirmDelete = window.confirm("삭제하시겠습니까?");
-    if (!confirmDelete) return;
-
-    try {
-      await axios.delete(`/tasks/${taskId}`);
-      fetchTeams(); 
-    } catch (err) {
-      console.error(err);
-    }
+  const handleDelete = (taskId: string) => {
+    if (!window.confirm("삭제하시겠습니까?")) return;
+    deleteTaskMutation.mutate(taskId);
   };
-  
+
   const statusMap = {
     TODO: { text: "진행중", color: "text-green-500" },
     IN_PROGRESS: { text: "대기중", color: "text-blue-500" },
     DONE: { text: "완료", color: "text-orange-500" },
   };
 
-  const handleAddTask = async () => {
-    if (!newTask) return;
 
-    try {
-      const res = await axios.post("/tasks", {
+  const handleAddTask = () => {
+    if (!newTask || !teamId || !userData?.id) return;
+
+    createTaskMutation.mutate(
+      {
         teamId,
         title: newTask,
-        status: "TODO", 
+        status: 'TODO',
         dueDate,
-        createdBy: userData.id 
-      });
-
-      setMyTasks((prev) => [
-        ...prev,
-        {
-          taskId: res.data._id,
-          title: newTask,
-          status: "TODO",
-          dueDate
-        }
-      ]);
-
-      // 🔥 초기화
-      setNewTask("");
-      setDueDate("");
-      setShowInput(false);
-
-    } catch (err) {
-      console.error(err);
-    }
+        createdBy: userData.id,
+      },
+      {
+        onSuccess: () => {
+          setNewTask('');
+          setDueDate('');
+          setShowInput(false);
+        },
+      }
+    );
   };
 
-  const createCode = async () => {
-    try{
-      const res = await axios.post(`/invite/${teamId}`)
-      const inviteCode = res.data.code;
-      const message = res.data.message;
 
-      await navigator.clipboard.writeText(inviteCode);
+  const createCode = () => {
+    inviteMutation.mutate(teamId!, {
+      onSuccess: async (data) => {
+        await navigator.clipboard.writeText(data.code);
 
-      toast.success(`${message}\n${inviteCode}`, {
-        position: "top-center",
-        autoClose: 4000, // ← 시간 길게
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    }catch(err){
-      toast.error(err.response?.data?.message)
-    }
-  }
+        toast.success(`${data.message}\n${data.code}`, {
+          position: "top-center",
+          autoClose: 4000, // ← 시간 길게
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      },
+      onError: (err: any) => {
+        toast.error(err.response?.data?.message);
+      }
+    });
+  };
 
   return (
     <div className="space-y-4 md:space-y-6 px-4 sm:px-6 md:px-0 max-w-md mx-auto md:max-w-full">
@@ -281,6 +266,7 @@ const DetailTeamPage = () => {
               <span className="w-2 h-2 rounded-full bg-orange-500" />
               완료
             </div>
+            
           </div>
         </div>
 
@@ -292,7 +278,7 @@ const DetailTeamPage = () => {
         </div>
 
         <div className="border-t mt-4 border-[#BCCBB8]" />
-
+          
         {/* 🔵 리스트 */}
         <div className="mt-2">
           {mytasks.map((task) => {
@@ -300,7 +286,6 @@ const DetailTeamPage = () => {
             const formatted = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
 
             const isEditing = editTaskId === task.taskId;
-
             return (
               <div
                 key={task.taskId}
@@ -450,10 +435,11 @@ const DetailTeamPage = () => {
           {teamtasks.map((task) => {
             const date = new Date(task.dueDate);
             const formatted = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-            const status = statusMap[task.status] || {
+            const status = statusMap[task.status as TaskStatus] || {
               text: "기타",
               color: "text-gray-400",
             };
+            
             return(
               <div
                 key={task.taskId}

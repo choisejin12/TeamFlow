@@ -14,16 +14,20 @@ import NavBar from './layout';
 import Home from './pages/HomePage';
 import DetailTeamPage from './pages/DetailTeamPage';
 import Calendar from './pages/Calendar';
+import { useEffect } from 'react';
+import { useAppDispatch } from './store/hook';
+import { authUser } from './store/thunkFunctions';
 
 function App() {
-  /*const dispatch = useDispatch();
-  
+  const dispatch = useAppDispatch();
+
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken') as string | null;
+
     if (token) {
       dispatch(authUser());
     }
-  }, []);*/
+  }, [dispatch]);
 
 
   return (

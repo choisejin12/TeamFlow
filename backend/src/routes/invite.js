@@ -17,7 +17,7 @@ router.post('/join', auth, async (req, res) => {
             return res.status(400).json({ message: '유효하지 않은 코드' });
         }
 
-        // 🔥 이미 가입했는지 체크
+        //  이미 가입했는지 체크
         const exists = await TeamMember.findOne({
             teamId: invite.teamId,
             userId: req.user._id
@@ -27,7 +27,7 @@ router.post('/join', auth, async (req, res) => {
             return res.status(400).json({ message: '이미 가입된 팀' });
         }
 
-        // 🔥 팀 가입
+        //  팀 가입
         const member = new TeamMember({
             teamId: invite.teamId,
             userId: req.user._id,
@@ -53,12 +53,12 @@ router.post('/join', auth, async (req, res) => {
 });
 
 
-// 🔥 코드 생성
+// 코드 생성
 router.post('/:teamId', auth, async (req, res) => {
     try {
         const { teamId } = req.params;
 
-        // 🔥 팀장 확인
+        // 팀장 확인
         const membership = await TeamMember.findOne({
             teamId,
             userId: req.user._id
@@ -68,7 +68,7 @@ router.post('/:teamId', auth, async (req, res) => {
             return res.status(403).json({ message: '팀장만 초대코드를 생성할 수 있습니다.' });
         }
 
-        // 🔥 코드 생성 (랜덤)
+        //  코드 생성 (랜덤)
         const code = Math.random().toString(36).substring(2, 8);
 
         const invite = new Invite({

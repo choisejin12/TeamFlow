@@ -9,10 +9,22 @@ const colors = [
   '#d6b98c'
 ];
 
-export default function TeamCreateModal({ isOpen, onClose, onCreate }) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [selectedColor, setSelectedColor] = useState(colors[0]);
+type CreateTeamInput = {
+  name: string;
+  description: string;
+  color: string;
+};
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (data: CreateTeamInput) => void;
+};
+
+export default function TeamCreateModal({ isOpen, onClose, onCreate }: Props) {
+  const [title, setTitle] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>(colors[0]);
 
   if (!isOpen) return null;
 
@@ -25,10 +37,10 @@ export default function TeamCreateModal({ isOpen, onClose, onCreate }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 h-full">
       
       {/* 모달 */}
-      <div className="bg-white w-[500px] rounded-3xl p-6 relative shadow-lg">
+      <div className="bg-white w-125 rounded-3xl p-6 relative shadow-lg">
         
         {/* 닫기 버튼 */}
         <button
@@ -52,7 +64,7 @@ export default function TeamCreateModal({ isOpen, onClose, onCreate }) {
         </div>
 
         <form
-          onSubmit={(e) => {
+          onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
             handleSubmit();
           }}
@@ -63,7 +75,7 @@ export default function TeamCreateModal({ isOpen, onClose, onCreate }) {
             <input
               className="w-full border rounded-lg p-2 mt-1 border-[#BCCBB8]"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
             />
           </div>
 
@@ -72,7 +84,7 @@ export default function TeamCreateModal({ isOpen, onClose, onCreate }) {
             <input
               className="w-full border rounded-lg p-2 mt-1 border-[#BCCBB8]"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
             />
           </div>
 

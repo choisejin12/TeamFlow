@@ -30,7 +30,7 @@ const taskSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
-// 🔥 인덱스 (성능 중요)
+// 인덱스 (성능 중요)
 taskSchema.index({ teamId: 1, status: 1 });
 taskSchema.index({ teamId: 1, assigneeId: 1 });
 taskSchema.index({ teamId: 1, dueDate: 1 });

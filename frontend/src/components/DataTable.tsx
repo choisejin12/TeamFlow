@@ -1,6 +1,16 @@
+type Column<T> = {
+  label: string;
+  key: keyof T;
+  render?: (value: T[keyof T], item: T) => React.ReactNode;
+};
 
+type Props<T> = {
+  columns: Column<T>[];
+  data: T[];
+  renderAction?: (item: T) => React.ReactNode;
+};
 
-const DataTable = ({ columns, data, renderAction }) => {
+const DataTable = <T,>({ columns, data, renderAction }: Props<T>) => {
   return (
     <div className="w-full">
 
@@ -11,7 +21,7 @@ const DataTable = ({ columns, data, renderAction }) => {
           <thead className="border-b text-gray-600">
             <tr>
               {columns.map((col) => (
-                <th key={col.key} className="py-3">
+                <th key={String(col.key)} className="py-3">
                   {col.label}
                 </th>
               ))}
@@ -24,10 +34,10 @@ const DataTable = ({ columns, data, renderAction }) => {
               <tr key={idx} className="border-b hover:bg-gray-50">
                 
                 {columns.map((col) => (
-                  <td key={col.key} className="py-3">
+                  <td key={String(col.key)} className="py-3">
                     {col.render 
                       ? col.render(item[col.key], item) 
-                      : item[col.key]}
+                      : String(item[col.key])}
                   </td>
                 ))}
 
@@ -61,14 +71,14 @@ const DataTable = ({ columns, data, renderAction }) => {
             {/* 데이터 */}
             <div className="grid grid-cols-2 gap-y-2 text-sm">
               {columns.map((col) => (
-                <div key={col.key}>
+                <div key={String(col.key)}>
                   <span className="text-gray-400 text-xs">
                     {col.label}
                   </span>
                   <div>
                     {col.render 
                       ? col.render(item[col.key], item) 
-                      : item[col.key]}
+                      : String(item[col.key])}
                   </div>
                 </div>
               ))}

@@ -1,6 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 
-function TeamList({ teams }) {
+type Team = {
+  teamId: string;
+  name: string;
+  description: string;
+  color: string;
+  role?: string;
+};
+
+type Props = {
+  teams: Team[];
+};
+
+function TeamList({ teams }: Props) {
   const navigate = useNavigate();
   return (
     <div>

@@ -391,10 +391,8 @@ const DetailTeamPage = () => {
           {/* 🔵 input */}
           {showInput && (
             <div className='flex flex-col md:flex-row'>
-              <div className="flex flex-row md:items-center gap-3 py-4">
-
+              <div className="flex flex-row md:items-center gap-3 py-4 md:w-full">
                 <div className="w-4 h-4 rounded-full bg-green-500 shrink-0" />
-
                 <input
                   type="text"
                   value={newTask}
@@ -403,18 +401,17 @@ const DetailTeamPage = () => {
                     if (e.key === "Enter") handleAddTask();
                   }}
                   placeholder="Please enter your Task"
-                  className="flex-1 border px-2 py-1 rounded bg-white text-black min-h-9"
+                  className="flex-1 border px-2 py-1 md:w-auto rounded bg-white text-black min-h-9"
                 />
-
               </div>
               
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <span className="text-gray-400">📅</span>
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="md:hidden text-gray-400">📅</span>
                 <input
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-[130px] px-3 py-2 border rounded  text-black text-base outline-none bg-transparent"
+                  className="w-32.5 px-3 py-2 border rounded  md:text-green-500  text-base outline-none bg-transparent md:border-none"
                 />
               </div>
             </div>

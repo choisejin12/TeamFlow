@@ -38,7 +38,7 @@ function NavItems({ className = "", onClose }: Props) {
     <div className={`flex h-full flex-col justify-between ${className}`}>
       <div>
         {/* 상단 유저 */}
-        <div className='border-b md:border-b-0 border-[#C5C5C5] pb-4 md:p-0'>
+        <div className='flex justify-between border-b md:border-b-0 border-[#C5C5C5] pb-4 md:p-0'>
           <div className="mt-4 flex items-center gap-3">
             <FaUserCircle size={60}/>
             <div>
@@ -48,8 +48,16 @@ function NavItems({ className = "", onClose }: Props) {
               <div className="text-sm text-gray-500">
                 {userData?.email}
               </div>
+              {/* 로그아웃 */}
+              <div className='flex flex-row items-center text-green-700 '>
+                <FaSignOutAlt/>
+                <button
+                  onClick={handleLogout}
+                  className="ml-2 text-left text-sm hover:underline"
+                >Logout
+                </button>
+              </div>
             </div>
-
           </div>
 
         </div>
@@ -75,16 +83,6 @@ function NavItems({ className = "", onClose }: Props) {
             </NavLink>
           ))}
         </nav>
-      </div>
-
-      {/* 로그아웃 */}
-      <div className='flex text-green-700 ml-5 md:ml-0 pb-6'>
-        <FaSignOutAlt/>
-        <button
-          onClick={handleLogout}
-          className="ml-2 text-left text-sm hover:underline"
-        >Logout
-        </button>
       </div>
 
     </div>

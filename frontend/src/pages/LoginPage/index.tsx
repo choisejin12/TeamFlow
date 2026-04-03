@@ -36,7 +36,7 @@ function Login() {
         reset();
       },
       onError: (err: any) => {
-        toast.error(err?.message || "로그인 실패");
+        toast.error(err.response?.data?.message || "로그인 실패");
       },
     });
   };

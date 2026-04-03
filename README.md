@@ -138,10 +138,12 @@ Task 생성 → DB 저장 → invalidateQueries(['teamDetail']) → 자동 리�
 ## 📄 페이지 구조
 | 페이지            | 설명      |
 | -------------- | ------- |
+| /home         | 메인화면     |
 | /login         | 로그인     |
 | /signup        | 회원가입    |
 | /dashboard     | 팀 목록    |
 | /join          | 초대코드 가입 |
+| /teams          | 팀 메인화면 |
 | /teams/:teamId | 팀 상세    |
 | /admin         | 관리자 페이지 |
 
@@ -168,7 +170,7 @@ Task 생성 → DB 저장 → invalidateQueries(['teamDetail']) → 자동 리�
 #### 📋 Calendar Management
 - Task의 마감일(dueDate)을 캘린더 형태로 시각화
 - 전체 Task 일정을 한눈에 확인 가능
-![task](./assets/calendar.png)
+![calendar](./assets/calender.png)
 
 ---
 
@@ -243,8 +245,15 @@ await TeamMember.deleteMany({ teamId });
 ### ❌ 상태 동기화 문제
 해결: React Query invalidateQueries 활용
 
+---
+## 📅 개발 기간
+2026-03-25 ~ 2026-04-03
 
+## 👤 프로젝트 인원
+1인 ( 개인 프로젝트 )
 
+# 📌 Summary
+협업 서비스의 핵심 구조(권한, 상태, 관계)를 Full Stack으로 직접 설계하고 구현한 프로젝트
 
 
 

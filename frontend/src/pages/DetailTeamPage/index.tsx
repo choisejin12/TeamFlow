@@ -178,7 +178,7 @@ const DetailTeamPage = () => {
         </div>
 
         {/* 설정 */}
-        <div className='flex items-center md:hidden ml-10'>
+        <div className='flex items-center md:hidden flex-col mr-5 relative text-center ml-3'>
           <IoSettingsSharp onClick={() => setShowSet(prev => !prev)} className='cursor-pointer  ' size={24}/>
           {showSet && 
           (
@@ -390,31 +390,36 @@ const DetailTeamPage = () => {
 
           {/* 🔵 input */}
           {showInput && (
-          <div className="flex flex-col md:flex-row md:items-center gap-3 py-4">
-            
-            <div className="w-4 h-4 rounded-full bg-green-500" />
+            <div className='flex flex-col md:flex-row'>
+              <div className="flex flex-row md:items-center gap-3 py-4">
 
-            <input
-              type="text"
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleAddTask();
-              }}
-              placeholder="Please enter your Task"
-              className="border px-2 py-1 rounded bg-white text-black min-h-9"
-            />
+                <div className="w-4 h-4 rounded-full bg-green-500 shrink-0" />
 
-            <div className="flex items-center gap-2 text-green-600 text-xs md:text-sm w-full md:w-auto">
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="bg-transparent outline-none"
-              />
+                <input
+                  type="text"
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddTask();
+                  }}
+                  placeholder="Please enter your Task"
+                  className="flex-1 border px-2 py-1 rounded bg-white text-black min-h-9"
+                />
+
+              </div>
+              
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <span className="text-gray-400">📅</span>
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-[130px] px-3 py-2 border rounded  text-black text-base outline-none bg-transparent"
+                />
+              </div>
             </div>
-          </div>
-        )}
+
+            )}
         </div>
       </div>
       {/* END */}

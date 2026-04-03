@@ -179,7 +179,13 @@ const DetailTeamPage = () => {
 
         {/* 설정 */}
         <div className='flex items-center md:hidden ml-10'>
-          <IoSettingsSharp size={24}/>
+          <IoSettingsSharp onClick={() => setShowSet(prev => !prev)} className='cursor-pointer  ' size={24}/>
+          {showSet && 
+          (
+            <div className='shadow-[0px_0px_4px_rgba(0,0,0,0.25)] px-4 py-2 absolute top-10 min-w-30 '>
+              <button onClick={TeamDelete} className='cursor-pointer'>팀 삭제하기</button>
+            </div>
+          )}
         </div>
 
         {/* 🔥 PC용 설정 아이콘 */}
@@ -396,10 +402,10 @@ const DetailTeamPage = () => {
                 if (e.key === "Enter") handleAddTask();
               }}
               placeholder="Please enter your Task"
-              className="flex-1 border rounded-lg px-4 py-2 text-sm md:text-base"
+              className="border px-2 py-1 rounded bg-white text-black min-h-9"
             />
 
-            <div className="flex items-center gap-2 text-green-600 text-xs md:text-sm">
+            <div className="flex items-center gap-2 text-green-600 text-xs md:text-sm w-full md:w-auto">
               <input
                 type="date"
                 value={dueDate}

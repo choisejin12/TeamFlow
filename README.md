@@ -234,7 +234,10 @@ AdminRoute
 
 ### ❌ JWT 인증 오류
 원인: Authorization Header 형식 오류
-해결: Bearer 토큰 형식 통일
+해결: 
+```ts
+Bearer 토큰 형식 통일
+```
 
 ### ❌ 팀 삭제 시 500 에러
 원인: TeamMember 데이터 미삭제

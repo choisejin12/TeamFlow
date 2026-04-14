@@ -2,8 +2,16 @@
 
 > 실제 팀 프로젝트 환경을 가정하여  
 > 팀 / 할 일 / 멤버를 통합 관리하는 협업 플랫폼
+> 
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![React Query](https://img.shields.io/badge/React_Query-5-FF4154?logo=reactquery&logoColor=white)
+![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2-764ABC?logo=redux&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-5-2D3748?logo=MongoDB&logoColor=white)
 
----
+
 
 ## 🔗 프로젝트 링크
 - GitHub: https://github.com/choisejin12/TeamFlow  
@@ -233,14 +241,14 @@ AdminRoute
 ## 💡 Troubleshooting
 
 ### ❌ JWT 인증 오류
-원인: Authorization Header 형식 오류
+원인: Authorization Header 형식 오류</br>
 해결: 
 ```ts
 Bearer 토큰 형식 통일
 ```
 
 ### ❌ 팀 삭제 시 500 에러
-원인: TeamMember 데이터 미삭제
+원인: TeamMember 데이터 미삭제</br>
 해결 
 ```ts 
 await TeamMember.deleteMany({ teamId });
